@@ -41,6 +41,9 @@ is_int_format_valid "$port" 'port number'
 #----------------------------------------------------------#
 
 sed -i "s|$oldport;|$port;|g" $VESTA/nginx/conf/nginx.conf
+systemctl reload vesta
+sed -i "s|$oldport;|$port;|g" $VESTA/data/templates/web/nginx/vesta.stpl
+$VESTA/bin/v-rebuild-web-domains admin
 if [ -f "/etc/roundcube/plugins/password/config.inc.php" ]; then
     sed -i "s|'$oldport'|'$port'|g" /etc/roundcube/plugins/password/config.inc.php
 fi
