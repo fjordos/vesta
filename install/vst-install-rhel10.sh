@@ -5,16 +5,16 @@
 #----------------------------------------------------------#
 #                  Variables&Functions                     #
 #----------------------------------------------------------#
-export PATH=$PATH:/sbin
+export PATH="$PATH:/sbin"
 . /etc/os-release
 RHOST='r.vestacp.com'
 REPO='cmmnt'
 VERSION='rhel'
 VESTA='/usr/local/vesta'
-memory=$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' |grep [0-9])
-arch=$(uname -i)
-os=$ID
-release=$VERSION_ID
+memory="$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' |grep [0-9])"
+arch="$(uname -i)"
+os="$ID"
+release="${VERSION_ID%%.*}"
 codename="${os}_$release"
 vestacp="$VESTA/install/$VERSION/$release"
 phpv="84"
@@ -31,7 +31,7 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     $softwarephp phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
     spamassassin sqlite sudo tar telnet unzip 
-    vesta-php vim vsftpd which zip"
+    vim vsftpd which zip"
 # TODO: vesta-softaculous
 
 # Defining help function
