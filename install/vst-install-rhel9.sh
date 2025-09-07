@@ -7,7 +7,6 @@
 #----------------------------------------------------------#
 export PATH=$PATH:/sbin
 RHOST='r.vestacp.com'
-CHOST='c.vestacp.com'
 REPO='cmmnt'
 VERSION='rhel'
 VESTA='/usr/local/vesta'

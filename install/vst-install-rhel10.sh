@@ -8,7 +8,6 @@
 export PATH=$PATH:/sbin
 . /etc/os-release
 RHOST='r.vestacp.com'
-CHOST='c.vestacp.com'
 REPO='cmmnt'
 VERSION='rhel'
 VESTA='/usr/local/vesta'
@@ -1415,9 +1414,13 @@ After=network-online.target remote-fs.target nss-lookup.target
 Wants=network-online.target
 
 [Service]
-Type=forking
+Type=notify
 PIDFile=/run/vesta-php.pid
-ExecStart=/usr/local/vesta/php/sbin/vesta-php -c /usr/local/vesta/php/etc/php-fpm.conf
+ExecStart=/usr/sbin/php-fpm --nodaemonize -y /usr/local/vesta/src/rpm/conf/php-fpm.conf
+ExecReload=/bin/kill -USR2 $MAINPID
+PrivateTmp=true
+RuntimeDirectory=php-fpm
+RuntimeDirectoryMode=0755
 Restart=on-failure
 RestartSec=10s
 
