@@ -33,19 +33,16 @@ is_object_valid 'user' 'USER' "$user"
 # Updating disk quota
 # Had quota equals package value. Soft quota equals 90% of package value for warnings.
 quota=$(get_user_value '$DISK_QUOTA')
-soft=$(echo "$quota * 1024"|bc |cut -f 1 -d .)
-hard=$(echo "$quota * 1024"|bc |cut -f 1 -d .)
-
-# Searching home mount point
-mnt=$(df -P /home |awk '{print $6}' |tail -n1)
+iquota=$(($quota * 64))
 
 # Checking unlinmited quota
 if [ "$quota" = 'unlimited' ]; then
-    setquota $user 0 0 0 0 $mnt 2>/dev/null
+  #xfs_quota -x -c "'limit -u bsoft=0 bhard=0 isoft=0 ihard=0 '$user" /home/$user
+  xfs_quota -x -c "'limit -g bsoft=0 bhard=0 isoft=0 ihard=0 '$user" /home/$user
 else
-    setquota $user $soft $hard 0 0 $mnt 2>/dev/null
+  #xfs_quota -x -c "'limit -u bsoft=$quota bhard=$quota isoft=$iquota ihard=$iquota '$user" /home/$user
+  xfs_quota -x -c "'limit -g bsoft=$quota bhard=$quota isoft=$iquota ihard=$iquota '$user" /home/$user
 fi
-
 
 #----------------------------------------------------------#
 #                       Vesta                              #
