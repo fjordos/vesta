@@ -721,15 +721,6 @@ fi
 #                     Configure VESTA                      #
 #----------------------------------------------------------#
 
-# Create the missing 9 release :-(
-if [ ! -d $vestacp ]; then
-    cp -a /usr/local/vesta/install/rhel/7 $vestacp
-    cp -af /usr/local/vesta/install/rhel/8/* $vestacp
-    # Error fixing
-    sed -i 's/\(.*IdentLookups\)/#\1/' $vestacp/proftpd/proftpd.conf
-    sed -i 's#/etc/security/pam_env.conf etc/security/pam_env.conf#/etc/security/pam_env.conf ~/etc/security/pam_env.conf#' $vestacp/proftpd/proftpd.conf
-fi
-
 # Installing sudo configuration
 mkdir -p /etc/sudoers.d
 cp -f $vestacp/sudo/admin /etc/sudoers.d/
@@ -739,8 +730,8 @@ chmod 440 /etc/sudoers.d/admin
 echo "export VESTA='$VESTA'" > /etc/profile.d/vesta.sh
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
-echo 'PATH=$PATH:'$VESTA'/bin' >> /root/.bash_profile
-echo 'export PATH' >> /root/.bash_profile
+echo '"PATH=$PATH:'$VESTA'/bin"' >> /root/.bash_profile
+echo 'export "$PATH"' >> /root/.bash_profile
 source /root/.bash_profile
 
 # Configuring logrotate for vesta logs

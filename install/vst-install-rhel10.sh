@@ -18,21 +18,23 @@ release="${VERSION_ID%%.*}"
 codename="${os}_$release"
 vestacp="$VESTA/install/$VERSION/$release"
 phpv="84"
+vesta_version=master
 
 # Defining software pack for all distros
 softwarephp="php$phpv php$phpv-php-bcmath php$phpv-php-cli php$phpv-php-common 
     php$phpv-php-fpm php$phpv-php-gd php$phpv-php-imap php$phpv-php-mbstring 
     php$phpv-php-mcrypt php$phpv-php-mysqlnd php$phpv-php-pdo php$phpv-php-pgsql 
-    php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-xmlrpc"
+    php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-xmlrpc
+    php$phpv-php-ioncube-loader"
 software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
-    clamav-update curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp 
+    clamav-update crudini curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp
     GeoIP httpd ImageMagick whois libidn lsof mariadb git
     mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
     $softwarephp phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
     spamassassin sqlite sudo tar telnet unzip 
     vim vsftpd which zip"
-# TODO: vesta-softaculous
+# TODO: softaculous
 
 # Defining help function
 help() {
@@ -254,7 +256,7 @@ check_result $? "No access to Vesta repository"
 # Checking installed packages
 tmpfile=$(mktemp -p /tmp)
 rpm -qa > $tmpfile
-for pkg in exim mysql-server httpd nginx vesta; do
+for pkg in exim mysql-server httpd nginx; do
     if [ ! -z "$(grep $pkg $tmpfile)" ]; then
         conflicts="$pkg $conflicts"
     fi
@@ -458,8 +460,8 @@ fi
 
 # Enable mandatory repos
 if [ ! -z "$(grep ^NAME=\"Red /etc/os-release)" ]; then
-    subscription-manager repos --enable rhel-9-for-x86_64-baseos-rpms
-    subscription-manager repos --enable rhel-9-for-x86_64-appstream-rpms
+    subscription-manager repos --enable rhel-${release}-for-x86_64-baseos-rpms
+    subscription-manager repos --enable rhel-${release}-for-x86_64-appstream-rpms
 fi
 
 # Updating system
@@ -483,6 +485,7 @@ if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
     check_result $? "Can't install REMI repository"
     sed -i "s/enabled=0/enabled=1/g" /etc/yum.repos.d/remi.repo
     if [[ -z "$phpv" ]] ; then  sed -i "s/enabled=0/enabled=1/g" /etc/yum.repos.d/remi-php$phpv.repo ; fi
+    yum config-manager --enable remi --enable remi-safe --enable remi-modular
 fi
 
 # Installing Nginx repository
@@ -504,17 +507,6 @@ gpgkey=https://nginx.org/keys/nginx_signing.key
 module_hotfixes=true
 EOF
 
-# Installing Vesta repository
-vrepo='/etc/yum.repos.d/vesta.repo'
-echo "[vesta]" > $vrepo
-echo "name=Vesta - $REPO" >> $vrepo
-echo "baseurl=http://$RHOST/$REPO/8/\$basearch/" >> $vrepo
-echo "enabled=1" >> $vrepo
-echo "gpgcheck=0" >> $vrepo
-echo "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-VESTA" >> $vrepo
-wget c.vestacp.com/GPG.txt -O /etc/pki/rpm-gpg/RPM-GPG-KEY-VESTA
-
-
 #----------------------------------------------------------#
 #                         Backup                           #
 #----------------------------------------------------------#
@@ -526,15 +518,15 @@ mkdir nginx httpd php php-fpm vsftpd proftpd named exim dovecot clamd \
     spamassassin mysql postgresql mongodb vesta
 
 # Backup Nginx configuration
-service nginx stop > /dev/null 2>&1
+systemctl stop nginx > /dev/null 2>&1
 cp -r /etc/nginx/* $vst_backups/nginx > /dev/null 2>&1
 
 # Backup Apache configuration
-service httpd stop > /dev/null 2>&1
+systemctl stop httpd > /dev/null 2>&1
 cp -r /etc/httpd/* $vst_backups/httpd > /dev/null 2>&1
 
 # Backup PHP-FPM configuration
-systemctl stop php-fpm php$phpv-php-fpm stop >/dev/null 2>&1
+systemctl stop php-fpm php$phpv-php-fpm >/dev/null 2>&1
 cp /etc/php.ini $vst_backups/php > /dev/null 2>&1
 cp -r /etc/php.d  $vst_backups/php > /dev/null 2>&1
 cp /etc/php-fpm.conf $vst_backups/php-fpm > /dev/null 2>&1
@@ -542,50 +534,48 @@ mv -f /etc/php-fpm.d/* $vst_backups/php-fpm/ > /dev/null 2>&1
 
 # Backup Bind configuration
 yum remove bind-chroot > /dev/null 2>&1
-service named stop > /dev/null 2>&1
+systemctl stop named > /dev/null 2>&1
 cp /etc/named.conf $vst_backups/named >/dev/null 2>&1
 
 # Backup Vsftpd configuration
-service vsftpd stop > /dev/null 2>&1
+systemctl stop vsftpd > /dev/null 2>&1
 cp /etc/vsftpd/vsftpd.conf $vst_backups/vsftpd >/dev/null 2>&1
 
 # Backup ProFTPD configuration
-service proftpd stop > /dev/null 2>&1
+systemctl stop proftpd > /dev/null 2>&1
 cp /etc/proftpd.conf $vst_backups/proftpd >/dev/null 2>&1
 
 # Backup Exim configuration
-service exim stop > /dev/null 2>&1
+systemctl stop exim > /dev/null 2>&1
 cp -r /etc/exim/* $vst_backups/exim >/dev/null 2>&1
 
 # Backup ClamAV configuration
-service clamd stop > /dev/null 2>&1
+systemctl stop clamd clamav-freshclam > /dev/null 2>&1
 cp /etc/clamd.conf $vst_backups/clamd >/dev/null 2>&1
 cp -r /etc/clamd.d $vst_backups/clamd >/dev/null 2>&1
 
 # Backup SpamAssassin configuration
-service spamassassin stop > /dev/null 2>&1
+systemctl stop spamassassin > /dev/null 2>&1
 cp -r /etc/mail/spamassassin/* $vst_backups/spamassassin >/dev/null 2>&1
 
 # Backup Dovecot configuration
-service dovecot stop > /dev/null 2>&1
+systemctl stop dovecot > /dev/null 2>&1
 cp /etc/dovecot.conf $vst_backups/dovecot > /dev/null 2>&1
 cp -r /etc/dovecot/* $vst_backups/dovecot > /dev/null 2>&1
 
 # Backup MySQL/MariaDB configuration and data
-service mysql stop > /dev/null 2>&1
-service mysqld stop > /dev/null 2>&1
-service mariadb stop > /dev/null 2>&1
+systemctl stop mysql mysqld mariadb > /dev/null 2>&1
 mv /var/lib/mysql $vst_backups/mysql/mysql_datadir >/dev/null 2>&1
 cp /etc/my.cnf $vst_backups/mysql > /dev/null 2>&1
 cp /etc/my.cnf.d $vst_backups/mysql > /dev/null 2>&1
 mv /root/.my.cnf  $vst_backups/mysql > /dev/null 2>&1
 
 # Backup MySQL/MariaDB configuration and data
-service postgresql stop > /dev/null 2>&1
+systemctl stop postgresql > /dev/null 2>&1
 mv /var/lib/pgsql/data $vst_backups/postgresql/  >/dev/null 2>&1
 
 # Backup Vesta
-service vesta stop > /dev/null 2>&1
+systemctl stop vesta vesta-php > /dev/null 2>&1
 mv $VESTA/data/* $vst_backups/vesta > /dev/null 2>&1
 mv $VESTA/conf/* $vst_backups/vesta > /dev/null 2>&1
 
@@ -668,6 +658,7 @@ fi
 # Installing VestaCP
 [[ -d "$VESTA" ]] && exit 1 || mkdir -p "$VESTA"
 git clone https://github.com/lonyai/vesta.git "$VESTA"
+git checkout $vesta_version "$VESTA"
 
 # Installing rpm packages
 yum install -y $software
@@ -679,17 +670,17 @@ check_result $? "yum install failed"
 #----------------------------------------------------------#
 
 # Restarting rsyslog
-service rsyslog restart > /dev/null 2>&1
+systemctl restart rsyslog > /dev/null 2>&1
 
-# Checking ipv6 on loopback interface
-check_lo_ipv6=$(/sbin/ip addr | grep 'inet6')
-check_rc_ipv6=$(grep 'scope global dev lo' /etc/rc.local)
-if [ ! -z "$check_lo_ipv6" ] && [ -z "$check_rc_ipv6" ]; then
-    ip addr add ::2/128 scope global dev lo
-    echo "# Vesta: Workraround for openssl validation func" >> /etc/rc.local
-    echo "ip addr add ::2/128 scope global dev lo" >> /etc/rc.local
-    chmod a+x /etc/rc.local
-fi
+## Checking ipv6 on loopback interface
+#check_lo_ipv6=$(/sbin/ip addr | grep 'inet6')
+#check_rc_ipv6=$(grep 'scope global dev lo' /etc/rc.local)
+#if [ ! -z "$check_lo_ipv6" ] && [ -z "$check_rc_ipv6" ]; then
+#    ip addr add ::2/128 scope global dev lo
+#    echo "# Vesta: Workraround for openssl validation func" >> /etc/rc.local
+#    echo "ip addr add ::2/128 scope global dev lo" >> /etc/rc.local
+#    chmod a+x /etc/rc.local
+#fi
 
 # Disabling SELinux
 if [ -e '/etc/sysconfig/selinux' ]; then
@@ -699,8 +690,7 @@ if [ -e '/etc/sysconfig/selinux' ]; then
 fi
 
 # Disabling iptables
-service iptables stop
-service firewalld stop >/dev/null 2>&1
+#service firewalld stop >/dev/null 2>&1
 
 
 # Configuring NTP synchronization
@@ -734,15 +724,6 @@ fi
 #                     Configure VESTA                      #
 #----------------------------------------------------------#
 
-# Create the missing 9 release :-(
-if [ ! -d $vestacp ]; then
-    cp -a /usr/local/vesta/install/rhel/7 $vestacp
-    cp -af /usr/local/vesta/install/rhel/8/* $vestacp
-    # Error fixing
-    sed -i 's/\(.*IdentLookups\)/#\1/' $vestacp/proftpd/proftpd.conf
-    sed -i 's#/etc/security/pam_env.conf etc/security/pam_env.conf#/etc/security/pam_env.conf ~/etc/security/pam_env.conf#' $vestacp/proftpd/proftpd.conf
-fi
-
 # Installing sudo configuration
 mkdir -p /etc/sudoers.d
 cp -f $vestacp/sudo/admin /etc/sudoers.d/
@@ -752,8 +733,8 @@ chmod 440 /etc/sudoers.d/admin
 echo "export VESTA='$VESTA'" > /etc/profile.d/vesta.sh
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
-echo 'PATH=$PATH:'$VESTA'/bin' >> /root/.bash_profile
-echo 'export PATH' >> /root/.bash_profile
+echo '"PATH=$PATH:'$VESTA'/bin"' >> /root/.bash_profile
+echo 'export "$PATH"' >> /root/.bash_profile
 source /root/.bash_profile
 
 # Configuring logrotate for vesta logs
@@ -860,7 +841,7 @@ echo "BACKUP_SYSTEM='local'" >> $VESTA/conf/vesta.conf
 echo "LANGUAGE='$lang'" >> $VESTA/conf/vesta.conf
 
 # Version
-echo "VERSION='0.9.8'" >> $VESTA/conf/vesta.conf
+echo "VERSION='$vesta_version'" >> $VESTA/conf/vesta.conf
 
 # Installing hosting packages
 cp -rf $vestacp/packages $VESTA/data/
@@ -915,8 +896,7 @@ if [ "$nginx" = 'yes' ]; then
         echo "[Service]" > limits.conf
         echo "LimitNOFILE=500000" >> limits.conf
     fi
-    systemctl enable nginx
-    service nginx start
+    systemctl enable --now nginx
     check_result $? "nginx start failed"
 
     # Workaround for OpenVZ/Virtuozzo
@@ -961,8 +941,7 @@ if [ "$apache" = 'yes'  ]; then
         echo "[Service]" > limits.conf
         echo "LimitNOFILE=500000" >> limits.conf
     fi
-    systemctl enable httpd
-    service httpd start
+    systemctl enable --now httpd
     check_result $? "httpd start failed"
 
     # Workaround for OpenVZ/Virtuozzo
@@ -979,8 +958,7 @@ fi
 
 if [ "$phpfpm" = 'yes' ]; then
     cp -f $vestacp/php-fpm/www.conf /etc/php-fpm.d/
-    systemctl enable php-fpm
-    service php-fpm start
+    systemctl enable --now php-fpm
     check_result $? "php-fpm start failed"
 fi
 
@@ -1008,8 +986,7 @@ done
 
 if [ "$vsftpd" = 'yes' ]; then
     cp -f $vestacp/vsftpd/vsftpd.conf /etc/vsftpd/
-    systemctl enable vsftpd
-    service vsftpd start
+    systemctl enable --now vsftpd
     check_result $? "vsftpd start failed"
 fi
 
@@ -1020,8 +997,7 @@ fi
 
 if [ "$proftpd" = 'yes' ]; then
     cp -f $vestacp/proftpd/proftpd.conf /etc/
-    systemctl enable proftpd
-    service proftpd start
+    systemctl enable --now proftpd
     check_result $? "proftpd start failed"
 fi
 
@@ -1051,14 +1027,13 @@ if [ "$mysql" = 'yes' ]; then
     fi
 
     cp -f $vestacp/$service/$mycnf /etc/my.cnf
-    systemctl enable $service
-    service $service start
+    systemctl enable --now $service
     if [ "$?" -ne 0 ]; then
         if [ -e "/proc/user_beancounters" ]; then
             # Fix for aio on OpenVZ
             sed -i "s/#innodb_use_native/innodb_use_native/g" /etc/my.cnf
         fi
-        service $service start
+        systemctl start $service
         check_result $? "$service start failed"
     fi
 
@@ -1104,7 +1079,7 @@ if [ "$postgresql" = 'yes' ]; then
     else
         service postgresql initdb
         cp -f $vestacp/postgresql/pg_hba.conf /var/lib/pgsql/data/
-        service postgresql start
+        systemctl enable --now postgresql
         sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$ppass'"
     fi
     # Configuring phpPgAdmin
@@ -1123,8 +1098,7 @@ if [ "$named" = 'yes' ]; then
     cp -f $vestacp/named/named.conf /etc/
     chown root:named /etc/named.conf
     chmod 640 /etc/named.conf
-    systemctl enable named
-    service named start
+    systemctl enable --now named
     check_result $? "named start failed"
 fi
 
@@ -1158,8 +1132,7 @@ if [ "$exim" = 'yes' ]; then
     systemctl disable postfix 2>/dev/null
     service postfix stop 2>/dev/null
 
-    systemctl enable exim
-    service exim start
+    systemctl enable --now exim
     check_result $? "exim start failed"
 else
     systemctl enable --now postfix.service
@@ -1178,8 +1151,7 @@ if [ "$dovecot" = 'yes' ]; then
     if [ "$release" -eq 7 ]; then
         sed -i "s#namespace inbox {#namespace inbox {\n  inbox = yes#" /etc/dovecot/conf.d/15-mailboxes.conf
     fi
-    systemctl enable dovecot
-    service dovecot start
+    systemctl enable --now dovecot
     check_result $? "dovecot start failed"
 fi
 
