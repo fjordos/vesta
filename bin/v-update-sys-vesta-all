@@ -1,6 +1,5 @@
 #!/bin/bash
-# info: update all vesta packages
-# options: USER [RESTART]
+# info: DEPRECATED!!! update all vesta packages
 #
 # The function of updating all vesta packages
 
@@ -9,25 +8,5 @@
 #                    Variable&Function                     #
 #----------------------------------------------------------#
 
-# Importing system variables
-source /etc/profile
-
-# Includes
-source $VESTA/func/main.sh
-source $VESTA/conf/vesta.conf
-
-
-#----------------------------------------------------------#
-#                       Action                             #
-#----------------------------------------------------------#
-
-# Starting update loop
-for package in vesta vesta-nginx vesta-php vesta-ioncube vesta-softaculous; do
-    $BIN/v-update-sys-vesta "$package"
-done
-
-#----------------------------------------------------------#
-#                       Vesta                              #
-#----------------------------------------------------------#
-
-exit
+# Link to new script
+$BIN/v-update-sys-vesta
