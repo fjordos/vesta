@@ -32,6 +32,7 @@ if (isset($_SESSION['user'])) {
     	$v_user = empty($_SESSION['look']) ? $_SESSION['user'] : $_SESSION['look'];
     	exec (VESTA_CMD . "v-list-user ".$v_user." json", $output, $return_var);
         $users = json_decode(implode('', $output), true);
+        var_dump($users);
     }
 }
 
@@ -39,6 +40,7 @@ if (isset($_SESSION['user'])) {
 if (isset($_POST['user']) && isset($_POST['password'])) {
     if(isset($_SESSION['token']) && isset($_POST['token']) && $_POST['token'] == $_SESSION['token']) {
         $v_user = escapeshellarg($_POST['user']);
+        $v_password = escapeshellarg($_POST['password']);
         $v_ip = escapeshellarg($_SERVER['REMOTE_ADDR']);
 
         if($_POST['user'] == 'root'){
@@ -53,34 +55,10 @@ if (isset($_POST['user']) && isset($_POST['password'])) {
             if ( $return_var > 0 ) {
                 $error = __('Invalid username or password');
             } else {
-                $user = $_POST['user'];
-                $password = $_POST['password'];
-                $salt = $pam[$user]['SALT'];
-                $method = $pam[$user]['METHOD'];
 
-                if ($method == 'md5' ) {
-                    $hash = crypt($password, '$1$'.$salt.'$');
-                }
-                if ($method == 'sha-512' ) {
-                    $hash = crypt($password, '$6$rounds=5000$'.$salt.'$');
-                    $hash = str_replace('$rounds=5000','',$hash);
-                }
-                if ($method == 'des' ) {
-                    $hash = crypt($password, $salt);
-                }
-
-                // Send hash via tmp file
-                $v_hash = exec('mktemp -p /tmp');
-                $fp = fopen($v_hash, "w");
-                fwrite($fp, $hash."\n");
-                fclose($fp);
-
-                // Check user hash
-                exec(VESTA_CMD ."v-check-user-hash ".$v_user." ".$v_hash." ".$v_ip,  $output, $return_var);
+                // Check user password
+                exec(VESTA_CMD ."v-check-user-password ".$v_user." ".$v_password,  $output, $return_var);
                 unset($output);
-
-                // Remove tmp file
-                unlink($v_hash);
 
                 // Check API answer
                 if ( $return_var > 0 ) {
