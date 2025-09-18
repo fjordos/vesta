@@ -32,7 +32,6 @@ if (isset($_SESSION['user'])) {
     	$v_user = empty($_SESSION['look']) ? $_SESSION['user'] : $_SESSION['look'];
     	exec (VESTA_CMD . "v-list-user ".$v_user." json", $output, $return_var);
         $users = json_decode(implode('', $output), true);
-        var_dump($users);
     }
 }
 
@@ -48,51 +47,42 @@ if (isset($_POST['user']) && isset($_POST['password'])) {
             unset($_POST['user']);
             $error = __('Login with root has been disabled');
         } else {
-            // Get user's salt
-            $output = '';
-            exec (VESTA_CMD."v-get-user-salt ".$v_user." ".$v_ip." json" , $output, $return_var);
-            $pam = json_decode(implode('', $output), true);
+            // Check user password
+            exec(VESTA_CMD ."v-check-user-password ".$v_user." ".$v_password,  $output, $return_var);
+            unset($output);
+
+            // Check API answer
             if ( $return_var > 0 ) {
                 $error = __('Invalid username or password');
             } else {
 
-                // Check user password
-                exec(VESTA_CMD ."v-check-user-password ".$v_user." ".$v_password,  $output, $return_var);
-                unset($output);
+                // Make root admin user
+                // if ($_POST['user'] == 'root') $v_user = 'admin';
 
-                // Check API answer
-                if ( $return_var > 0 ) {
-                    $error = __('Invalid username or password');
+                // Get user speciefic parameters
+                exec (VESTA_CMD . "v-list-user ".$v_user." json", $output, $return_var);
+                $users = json_decode(implode('', $output), true);
+
+                // Define session user
+                $_SESSION['user'] = key($users);
+                $v_user = $_SESSION['user'];
+                $_SESSION['root_dir'] = $users[$v_user]['HOME'];
+
+                // Get user favorites
+                get_favourites();
+
+                // Define language
+                $output = '';
+                exec (VESTA_CMD."v-list-sys-languages json", $output, $return_var);
+                $languages = json_decode(implode('', $output), true);
+                if (in_array($users[$v_user]['LANGUAGE'], $languages)){
+                    $_SESSION['language'] = $users[$v_user]['LANGUAGE'];
                 } else {
-
-                    // Make root admin user
-                    // if ($_POST['user'] == 'root') $v_user = 'admin';
-
-                    // Get user speciefic parameters
-                    exec (VESTA_CMD . "v-list-user ".$v_user." json", $output, $return_var);
-                    $users = json_decode(implode('', $output), true);
-
-                    // Define session user
-                    $_SESSION['user'] = key($users);
-                    $v_user = $_SESSION['user'];
-                    $_SESSION['root_dir'] = $users[$v_user]['HOME'];
-
-                    // Get user favorites
-                    get_favourites();
-
-                    // Define language
-                    $output = '';
-                    exec (VESTA_CMD."v-list-sys-languages json", $output, $return_var);
-                    $languages = json_decode(implode('', $output), true);
-                    if (in_array($users[$v_user]['LANGUAGE'], $languages)){
-                        $_SESSION['language'] = $users[$v_user]['LANGUAGE'];
-                    } else {
-                        $_SESSION['language'] = 'en';
-                    }
-
-                    // Regenerate session id to prevent session fixation
-                    session_regenerate_id(true);
+                    $_SESSION['language'] = 'en';
                 }
+
+                // Regenerate session id to prevent session fixation
+                session_regenerate_id(true);
             }
         }
     } else {
