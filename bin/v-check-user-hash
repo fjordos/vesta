@@ -65,6 +65,8 @@ then
         method='md5'
     elif [ "$method" -eq '6' ]; then
         method='sha-512'
+    elif [ "$method" = 'y' ]; then
+        method='yescrypt'
     else
         echo "Error: password missmatch"
         echo "$date $time $user $ip failed to login" >> $VESTA/log/auth.log

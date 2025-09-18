@@ -3,6 +3,7 @@ define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
 
 if (isset($_POST['user']) || isset($_POST['hash'])) {
 
+    $v_ip = escapeshellarg($_SERVER['REMOTE_ADDR']);
     // Authentication
     if (empty($_POST['hash'])) {
         if ($_POST['user'] != 'admin') {
@@ -11,7 +12,6 @@ if (isset($_POST['user']) || isset($_POST['hash'])) {
         }
 
         $password = $_POST['password'];
-        $v_ip = escapeshellarg($_SERVER['REMOTE_ADDR']);
         $output = '';
         exec (VESTA_CMD."v-get-user-salt admin ".$v_ip." json" , $output, $return_var);
         $pam = json_decode(implode('', $output), true);
