@@ -896,6 +896,8 @@ if [ "$nginx" = 'yes' ]; then
         echo "[Service]" > limits.conf
         echo "LimitNOFILE=500000" >> limits.conf
     fi
+    firewall-cmd --permanent --add-service=http
+    firewall-cmd --permanent --add-service=https
     systemctl enable --now nginx
     check_result $? "nginx start failed"
 
@@ -941,6 +943,8 @@ if [ "$apache" = 'yes'  ]; then
         echo "[Service]" > limits.conf
         echo "LimitNOFILE=500000" >> limits.conf
     fi
+    firewall-cmd --permanent --add-service=http
+    firewall-cmd --permanent --add-service=https
     systemctl enable --now httpd
     check_result $? "httpd start failed"
 
@@ -986,6 +990,7 @@ done
 
 if [ "$vsftpd" = 'yes' ]; then
     cp -f $vestacp/vsftpd/vsftpd.conf /etc/vsftpd/
+    firewall-cmd --add-service=ftp --permanent
     systemctl enable --now vsftpd
     check_result $? "vsftpd start failed"
 fi
@@ -997,6 +1002,7 @@ fi
 
 if [ "$proftpd" = 'yes' ]; then
     cp -f $vestacp/proftpd/proftpd.conf /etc/
+    firewall-cmd --add-service=ftp --permanent
     systemctl enable --now proftpd
     check_result $? "proftpd start failed"
 fi
@@ -1098,6 +1104,7 @@ if [ "$named" = 'yes' ]; then
     cp -f $vestacp/named/named.conf /etc/
     chown root:named /etc/named.conf
     chmod 640 /etc/named.conf
+    firewall-cmd --permanent --add-service=dns
     systemctl enable --now named
     check_result $? "named start failed"
 fi
@@ -1127,10 +1134,12 @@ if [ "$exim" = 'yes' ]; then
 
     rm -f /etc/alternatives/mta
     ln -s /usr/sbin/sendmail.exim /etc/alternatives/mta
-    systemctl disable sendmail
-    service sendmail stop 2>/dev/null
-    systemctl disable postfix 2>/dev/null
-    service postfix stop 2>/dev/null
+    systemctl disable --nw sendmail 2>/dev/null
+    systemctl disable --now postfix 2>/dev/null
+
+    firewall-cmd --permanent --add-service=smtp
+    firewall-cmd --permanent --add-service=smtps
+    firewall-cmd --permanent --add-service=submission
 
     systemctl enable --now exim
     check_result $? "exim start failed"
@@ -1417,6 +1426,8 @@ if [ "$port" != "8083" ]; then
     $VESTA/bin/v-change-vesta-port $port
 fi
 
+firewall-cmd --permanent --add-port=$port/tcp
+
 echo "NOTIFY_ADMIN_FULL_BACKUP='$email'" >> $VESTA/conf/vesta.conf
 
 #----------------------------------------------------------#
@@ -1479,6 +1490,9 @@ fi
 echo "==="
 echo "UPDATE_HOSTNAME_SSL='yes'" >> $VESTA/conf/vesta.conf
 fi
+
+# Active the Firewalld configuration
+firewall-cmd --reload
 
 # Sending notification to admin email
 echo -e "Congratulations, you have just successfully installed \
