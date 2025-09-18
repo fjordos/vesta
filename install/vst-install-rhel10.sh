@@ -657,7 +657,7 @@ fi
 
 # Installing VestaCP
 [[ -d "$VESTA" ]] && exit 1 || mkdir -p "$VESTA"
-git clone https://github.com/lonyai/vesta.git "$VESTA"
+git clone https://github.com/fjordos/vesta.git "$VESTA"
 git checkout $vesta_version "$VESTA"
 
 # Installing rpm packages

@@ -53,7 +53,7 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
 esac
 
 #URL="https://vestacp.com/pub"
-URL="https://github.com/lonyai/vesta/raw/refs/heads/master/install"
+URL="https://github.com/fjordos/vesta/raw/refs/heads/master/install"
 # Check wget
 if [ -e '/usr/bin/wget' ]; then
     wget ${URL}/vst-install-$type.sh -O vst-install-$type.sh
