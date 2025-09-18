@@ -45,7 +45,7 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
     Amazon)     type="amazon" ;;
     *)          source /etc/os-release
                 if [ "${VERSION_ID%%.*}" == '9' ] || [ "${VERSION_ID%%.*}" == '10' ] ; then
-                    type="rhel${VERSION_ID:%%.*}"
+                    type="rhel${VERSION_ID%%.*}"
                 else
                     type="rhel"
                 fi
@@ -56,21 +56,21 @@ esac
 URL="https://github.com/fjordos/vesta/raw/refs/heads/master/install"
 # Check wget
 if [ -e '/usr/bin/wget' ]; then
-    wget ${URL}/vst-install-$type.sh -O vst-install-$type.sh
+    wget ${URL}/vst-install-"$type".sh -O vst-install-"$type".sh
     if [ "$?" -eq '0' ]; then
-        bash vst-install-$type.sh $*
+        bash vst-install-"$type".sh $*
         exit
     else
-        echo "Error: vst-install-$type.sh download failed."
+        echo "Error: vst-install-"$type".sh download failed."
         exit 1
     fi
 fi
 
 # Check curl
 if [ -e '/usr/bin/curl' ]; then
-    curl -O ${URL}/vst-install-$type.sh
+    curl -O "${URL}"/vst-install-"$type".sh
     if [ "$?" -eq '0' ]; then
-        bash vst-install-$type.sh $*
+        bash vst-install-"$type".sh $*
         exit
     else
         echo "Error: vst-install-$type.sh download failed."

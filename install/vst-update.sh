@@ -36,13 +36,14 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
     Amazon)     type="amazon" ;;
     *)          source /etc/os-release
                 if [ "${VERSION_ID%%.*}" == '9' ] || [ "${VERSION_ID%%.*}" == '10' ] ; then
-                    type="rhel${VERSION_ID:%%.*}"
+                    type="rhel${VERSION_ID%%.*}"
                 else
                     type="rhel"
                 fi
       ;;
 esac
 
-URL="https://github.com/fjordos/vesta/raw/refs/heads/master/install"
+[[ -e "$VESTA"/install/vst-update-"$type".sh ]] && source "$VESTA"/install/vst-update-"$type".sh
+[[ -e "$VESTA"/install/vst-update-custom.sh ]] && source "$VESTA"/install/vst-update-custom.sh
 
 exit
