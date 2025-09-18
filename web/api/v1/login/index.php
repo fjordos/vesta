@@ -40,7 +40,6 @@ if (isset($_POST['user']) && isset($_POST['password'])) {
     if(isset($_SESSION['token']) && isset($_POST['token']) && $_POST['token'] == $_SESSION['token']) {
         $v_user = escapeshellarg($_POST['user']);
         $v_password = escapeshellarg($_POST['password']);
-        $v_ip = escapeshellarg($_SERVER['REMOTE_ADDR']);
 
         if($_POST['user'] == 'root'){
             unset($_POST['password']);
