@@ -8,5 +8,8 @@
 #                    Variable&Function                     #
 #----------------------------------------------------------#
 
+# Importing system environment
+source /etc/profile
+
 # Link to new script
-$BIN/v-update-sys-vesta
+"$VESTA"/bin/v-update-sys-vesta
