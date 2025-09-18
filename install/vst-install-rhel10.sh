@@ -1247,34 +1247,29 @@ fi
 
 if [ "$fail2ban" = 'yes' ]; then
     cp -rf $vestacp/fail2ban /etc/
-    if [ "$dovecot" = 'no' ]; then
-        fline=$(cat /etc/fail2ban/jail.local |grep -n dovecot-iptables -A 2)
-        fline=$(echo "$fline" |grep enabled |tail -n1 |cut -f 1 -d -)
-        sed -i "${fline}s/true/false/" /etc/fail2ban/jail.local
+    if [ "$dovecot" = 'yes' ]; then
+      crudini --set /etc/fail2ban/jail.local dovecot enabled true
+    else
+      crudini --set /etc/fail2ban/jail.local dovecot enabled false
     fi
-    if [ "$exim" = 'no' ]; then
-        fline=$(cat /etc/fail2ban/jail.local |grep -n exim-iptables -A 2)
-        fline=$(echo "$fline" |grep enabled |tail -n1 |cut -f 1 -d -)
-        sed -i "${fline}s/true/false/" /etc/fail2ban/jail.local
+    if [ "$exim" = 'yes' ]; then
+      crudini --set /etc/fail2ban/jail.local exim enabled true
+      crudini --set /etc/fail2ban/jail.local exim-spam enabled true
+    else
+      crudini --set /etc/fail2ban/jail.local exim enabled false
+      crudini --set /etc/fail2ban/jail.local exim-spam enabled false
     fi
     if [ "$vsftpd" = 'yes' ]; then
-        #Create vsftpd Log File
-        if [ ! -f "/var/log/vsftpd.log" ]; then
-            touch /var/log/vsftpd.log
-        fi
-        fline=$(cat /etc/fail2ban/jail.local |grep -n vsftpd-iptables -A 2)
-        fline=$(echo "$fline" |grep enabled |tail -n1 |cut -f 1 -d -)
-        sed -i "${fline}s/false/true/" /etc/fail2ban/jail.local
+      crudini --set /etc/fail2ban/jail.local vsftpd enabled true
+    else
+      crudini --set /etc/fail2ban/jail.local vsftpd enabled false
     fi
-    systemctl enable fail2ban
-    mkdir -p /var/run/fail2ban
-    if [ -e "/usr/lib/systemd/system/fail2ban.service" ]; then
-        exec_pre='ExecStartPre=/bin/mkdir -p /var/run/fail2ban'
-        sed -i "s|\[Service\]|[Service]\n$exec_pre|g" \
-            /usr/lib/systemd/system/fail2ban.service
-        systemctl daemon-reload
+    if [ "$proftpd" = 'yes' ]; then
+        crudini --set /etc/fail2ban/jail.local proftpd enabled true
+    else
+        crudini --set /etc/fail2ban/jail.local proftpd enabled false
     fi
-    service fail2ban start
+    systemctl enable --now fail2ban
     check_result $? "fail2ban start failed"
 fi
 
