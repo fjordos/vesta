@@ -4,6 +4,9 @@ session_start();
 
 define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
 define('JS_LATEST_UPDATE', '1758252713');
+file_exists('/usr/local/vesta/conf/vesta.php') ? : require_once('../../conf/vesta.php');
+
+defined('VESTA_DEBUG') ? : define('VESTA_DEBUG', false);
 
 $i = 0;
 
@@ -96,7 +99,8 @@ if (isset($_SESSION['look']) && ( $_SESSION['look'] != 'admin' )) {
     $user = $_SESSION['look'];
 }
 
-function get_favourites(){
+function get_favourites(): void
+{
     exec (VESTA_CMD."v-list-user-favourites ".$_SESSION['user']." json", $output, $return_var);
 //    $data = json_decode(implode('', $output).'}', true);
     $data = json_decode(implode('', $output), true);
@@ -117,14 +121,17 @@ function get_favourites(){
 }
 
 
-function check_error($return_var) {
+
+function check_error($return_var): void
+{
     if ( $return_var > 0 ) {
         header("Location: /error/");
         exit;
     }
 }
 
-function check_return_code($return_var,$output) {
+function check_return_code($return_var,$output): void
+{
     if ($return_var != 0) {
         $error = implode('<br>', $output);
         if (empty($error)) $error = __('Error code:',$return_var);
@@ -132,7 +139,8 @@ function check_return_code($return_var,$output) {
     }
 }
 
-function top_panel($user, $TAB) {
+function top_panel($user, $TAB): void
+{
     global $panel;
     $command = VESTA_CMD."v-list-user '".$user."' 'json'";
     exec ($command, $output, $return_var);
@@ -162,7 +170,8 @@ function translate_date($date){
   return strftime("%d &nbsp;", $date).__(strftime("%b", $date)).strftime(" &nbsp;%Y", $date);
 }
 
-function humanize_time($usage=0) {
+function humanize_time($usage=0): string
+{
     if ( $usage > 60 ) {
         $usage = $usage / 60;
         if ( $usage > 24 ) {
@@ -211,7 +220,8 @@ function humanize_usage_size($usage=0) {
     return $usage;
 }
 
-function humanize_usage_measure($usage=0) {
+function humanize_usage_measure($usage=0): string
+{
     $measure = 'kb';
 
     if ( $usage > 1024 ) {
@@ -234,7 +244,8 @@ function humanize_usage_measure($usage=0) {
 }
 
 
-function get_percentage($used=0,$total=0) {
+function get_percentage($used=0,$total=0): int|string
+{
     // Convert parameters to numeric values to handle string inputs
     $used = is_numeric($used) ? (float)$used : 0;
     $total = is_numeric($total) ? (float)$total : 0;
@@ -254,7 +265,8 @@ function get_percentage($used=0,$total=0) {
     return $percent;
 }
 
-function send_email($to,$subject,$mailtext,$from) {
+function send_email($to,$subject,$mailtext,$from): void
+{
     $charset = "utf-8";
     $to = '<'.$to.'>';
     $boundary = '--' . md5( uniqid("myboundary") );
@@ -271,7 +283,8 @@ function send_email($to,$subject,$mailtext,$from) {
     mail($to, $subject, $message, $header);
 }
 
-function list_timezones() {
+function list_timezones(): array
+{
     // Map timezone abbreviations to proper IANA timezone identifiers
     $timezone_mappings = [
         'HAST' => 'Pacific/Honolulu',        // Hawaii-Aleutian Standard Time
@@ -318,15 +331,15 @@ function list_timezones() {
     foreach($timezone_offsets as $timezone => $offset){
         $offset_prefix = $offset < 0 ? '-' : '+';
         $offset_formatted = gmdate( 'H:i', abs($offset) );
-        $pretty_offset = "UTC${offset_prefix}${offset_formatted}";
+        $pretty_offset = "UTC{$offset_prefix}{$offset_formatted}";
         
         try {
             // Use the mapped timezone if it's an abbreviation, otherwise use the timezone as-is
-            $tz_identifier = isset($timezone_mappings[$timezone]) ? $timezone_mappings[$timezone] : $timezone;
+            $tz_identifier = $timezone_mappings[$timezone] ?? $timezone;
             $t = new DateTimeZone($tz_identifier);
             $c = new DateTime(null, $t);
             $current_time = $c->format('H:i:s');
-            $timezone_list[$timezone] = "$timezone [ $current_time ] ${pretty_offset}";
+            $timezone_list[$timezone] = "$timezone [ $current_time ] {$pretty_offset}";
         } catch (Exception $e) {
             // Skip if we can't create the timezone
             continue;
@@ -350,11 +363,151 @@ function list_timezones() {
  *
  * @return string
  */
-function is_it_mysql_or_mariadb() {
+function is_it_mysql_or_mariadb(): string
+{
     exec (VESTA_CMD."v-list-sys-services json", $output, $return_var);
     $data = json_decode(implode('', $output), true);
     unset($output);
     $mysqltype='mysql';
     if (isset($data['mariadb'])) $mysqltype='mariadb';
     return $mysqltype;
+}
+
+/**
+ * Execute Vesta command with debug functionality and error handling
+ *
+ * @param string $command The Vesta command to execute (without the v- prefix)
+ * @param array $args Array of arguments for the command
+ * @param bool $json Whether to expect JSON output (default: false)
+ * @param bool $debug Whether to enable debug output (default: false)
+ * @return array Returns array with 'success', 'data', 'output', 'return_code', 'command', 'execution_time'
+ */
+function vesta_exec($command, $args = [], $json = false, $debug = VESTA_DEBUG): array
+{
+    // Start timing
+    $start_time = microtime(true);
+
+    // Sanitize command name
+    $command = preg_replace('/[^a-zA-Z0-9\-_]/', '', $command);
+
+    // Add v- prefix if not present
+    if (!str_starts_with($command, 'v-')) {
+        $command = 'v-' . $command;
+    }
+
+    // Escape arguments
+    $escaped_args = [];
+    foreach ($args as $arg) {
+        $escaped_args[] = escapeshellarg($arg);
+    }
+
+    // Build full command
+    $full_command = VESTA_CMD . $command;
+    if (!empty($escaped_args)) {
+        $full_command .= ' ' . implode(' ', $escaped_args);
+    }
+    if ($json) {
+        $full_command .= ' json';
+    }
+
+    // Debug output
+    if ($debug) {
+        error_log("[VESTA_DEBUG] Executing: " . $full_command);
+    }
+
+    // Execute command
+    $output = [];
+    $return_code = 0;
+    exec($full_command, $output, $return_code);
+
+    // Calculate execution time
+    $execution_time = microtime(true) - $start_time;
+
+    // Process output
+    $data = null;
+    if ($json && !empty($output)) {
+        $json_string = implode('', $output);
+        $data = json_decode($json_string, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            if ($debug) {
+                error_log("[VESTA_DEBUG] JSON decode error: " . json_last_error_msg());
+                error_log("[VESTA_DEBUG] Raw output: " . $json_string);
+            }
+        }
+    }
+
+    // Debug output
+    if ($debug) {
+        error_log("[VESTA_DEBUG] Return code: " . $return_code);
+        error_log("[VESTA_DEBUG] Execution time: " . number_format($execution_time * 1000, 2) . "ms");
+        error_log("[VESTA_DEBUG] Output lines: " . count($output));
+        if ($return_code !== 0) {
+            error_log("[VESTA_DEBUG] Error output: " . implode("\n", $output));
+        }
+    }
+
+    return [
+        'success' => $return_code === 0,
+        'data' => $data,
+        'output' => $output,
+        'return_code' => $return_code,
+        'command' => $full_command,
+        'execution_time' => $execution_time
+    ];
+}
+
+/**
+ * Simplified wrapper for common Vesta commands that expect JSON output
+ *
+ * @param string $command The Vesta command to execute
+ * @param array $args Array of arguments for the command
+ * @param bool $debug Whether to enable debug output
+ * @return array|null Returns parsed JSON data or null on error
+ */
+function vesta_exec_json($command, $args = [], $debug = VESTA_DEBUG): ?array
+{
+    $result = vesta_exec($command, $args, true, $debug);
+
+    if (!$result['success']) {
+        if ($debug) {
+            error_log("[VESTA_ERROR] Command failed: " . $result['command']);
+        }
+        return null;
+    }
+
+    return $result['data'];
+}
+
+/**
+ * Execute Vesta command and handle errors automatically
+ *
+ * @param string $command The Vesta command to execute
+ * @param array $args Array of arguments for the command
+ * @param bool $json Whether to expect JSON output
+ * @param bool $redirect_on_error Whether to redirect to error page on failure
+ * @param bool $debug Whether to enable debug output
+ * @return array|bool Returns data on success, false on error
+ */
+function vesta_exec_safe($command, $args = [], $json = false, $redirect_on_error = true, $debug = VESTA_DEBUG): bool|array
+{
+    $result = vesta_exec($command, $args, $json, $debug);
+
+    if (!$result['success']) {
+        if ($redirect_on_error && $result['return_code'] > 0) {
+            header("Location: /error/");
+            exit;
+        }
+
+        // Set error message in session
+        $error = implode('<br>', $result['output']);
+        if (empty($error)) {
+            $error = __('Error code:', $result['return_code']);
+        }
+        $_SESSION['error_msg'] = $error;
+
+        return false;
+    }
+
+    return $json ? $result['data'] : $result['output'];
 }
