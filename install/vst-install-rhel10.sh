@@ -28,11 +28,11 @@ softwarephp="php$phpv php$phpv-php-bcmath php$phpv-php-cli php$phpv-php-common
     php$phpv-php-ioncube-loader"
 software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     clamav-update crudini curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp
-    GeoIP httpd ImageMagick whois libidn lsof mariadb git
+    GeoIP httpd ImageMagick whois libidn lsof mariadb git certbot python3-certbot-nginx
     mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
     $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
-    spamassassin sqlite sudo tar telnet unzip 
+    spamassassin sqlite sudo tar telnet unzip yeBa6cexoaP4Aiphapaefeuz
     vim vsftpd which zip"
 # TODO: softaculous
 
@@ -1361,6 +1361,28 @@ fi
 if [ "$softaculous" = 'yes' ]; then
     $VESTA/bin/v-add-vesta-softaculous
 fi
+
+# Create certbot post hook for SSL certificates
+cat > /etc/letsencrypt/renewal-hooks/post/vesta-deploy.sh << EOF
+#!/bin/bash
+#
+. /etc/profile.d/vesta.sh
+
+CERTBOT_USER="\$(/bin/ls -d /home/*/web/"$CERTBOT_DOMAIN" | awk -F / '{print \$3}')"
+
+/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/privkey.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.key
+/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/cert.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.crt
+/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/chain.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.ca
+/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/fullchain.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.pem
+
+for I in key crt ca pem ; do
+  cp -f  "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.\${I} /home/\$user/conf/web/ssl.\${CERTBOT_DOMAIN}.\${I}
+done
+
+/bin/systemctl reload nginx.service
+/bin/systemctl reload httpd.service
+EOF
+chmod +x /etc/letsencrypt/renewal-hooks/post/vesta-deploy.sh
 
 # Starting Vesta service
 #vesta_user=admin
