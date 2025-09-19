@@ -3,7 +3,7 @@
 session_start();
 
 define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
-define('JS_LATEST_UPDATE', '1491697868');
+define('JS_LATEST_UPDATE', '1758252713');
 
 $i = 0;
 
@@ -162,7 +162,7 @@ function translate_date($date){
   return strftime("%d &nbsp;", $date).__(strftime("%b", $date)).strftime(" &nbsp;%Y", $date);
 }
 
-function humanize_time($usage) {
+function humanize_time($usage=0) {
     if ( $usage > 60 ) {
         $usage = $usage / 60;
         if ( $usage > 24 ) {
@@ -192,7 +192,7 @@ function humanize_time($usage) {
     return $usage;
 }
 
-function humanize_usage_size($usage) {
+function humanize_usage_size($usage=0) {
     if ( $usage > 1024 ) {
         $usage = $usage / 1024;
         if ( $usage > 1024 ) {
@@ -211,7 +211,7 @@ function humanize_usage_size($usage) {
     return $usage;
 }
 
-function humanize_usage_measure($usage) {
+function humanize_usage_measure($usage=0) {
     $measure = 'kb';
 
     if ( $usage > 1024 ) {
@@ -234,13 +234,11 @@ function humanize_usage_measure($usage) {
 }
 
 
-function get_percentage($used,$total) {
-    if (!isset($total)) $total =  0;
-    if (!isset($used)) $used =  0;
+function get_percentage($used=0,$total=0) {
     if ( $total == 0 ) {
         $percent = 0;
     } else {
-        $percent = $used / $total;
+        $percent = 100 * $used / $total;
         $percent = $percent * 100;
         $percent = number_format($percent, 0, '', '');
         if ( $percent > 100 ) {
