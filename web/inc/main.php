@@ -235,11 +235,14 @@ function humanize_usage_measure($usage=0) {
 
 
 function get_percentage($used=0,$total=0) {
+    // Convert parameters to numeric values to handle string inputs
+    $used = is_numeric($used) ? (float)$used : 0;
+    $total = is_numeric($total) ? (float)$total : 0;
+
     if ( $total == 0 ) {
         $percent = 0;
     } else {
         $percent = 100 * $used / $total;
-        $percent = $percent * 100;
         $percent = number_format($percent, 0, '', '');
         if ( $percent > 100 ) {
             $percent = 100;
@@ -247,7 +250,6 @@ function get_percentage($used=0,$total=0) {
         if ( $percent < 0 ) {
             $percent = 0;
         }
-
     }
     return $percent;
 }
