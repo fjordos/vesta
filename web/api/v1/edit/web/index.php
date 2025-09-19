@@ -64,7 +64,8 @@ $v_ftp_user = $data[$v_domain]['FTP_USER'];
 $v_ftp_path = $data[$v_domain]['FTP_PATH'];
 if (!empty($v_ftp_user)) $v_ftp_password = "";
 $v_ftp_user_prepath = $data[$v_domain]['DOCUMENT_ROOT'];
-$v_ftp_user_prepath = str_replace('/public_html', '', $v_ftp_user_prepath, 1);
+$count = 1;
+$v_ftp_user_prepath = str_replace('/public_html', '', $v_ftp_user_prepath, $count);
 $v_ftp_email = $panel[$user]['CONTACT'];
 $v_suspended = $data[$v_domain]['SUSPENDED'];
 if ( $v_suspended == 'yes' ) {
