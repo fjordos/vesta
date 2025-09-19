@@ -62,7 +62,7 @@ csv_list() {
 #----------------------------------------------------------#
 
 # Check cron tab
-check_cron=$(grep 'v-update-sys-vesta-all' $USER_DATA/cron.conf)
+check_cron=$(grep 'v-update-sys-vesta' $USER_DATA/cron.conf)
 
 # Listing data
 case $format in

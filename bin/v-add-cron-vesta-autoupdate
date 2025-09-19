@@ -24,7 +24,7 @@ source $VESTA/conf/vesta.conf
 is_system_enabled "$CRON_SYSTEM" 'CRON_SYSTEM'
 is_package_full 'CRON_JOBS'
 get_next_cronjob
-check_cron=$(grep 'v-update-sys-vesta-all' $USER_DATA/cron.conf)
+check_cron=$(grep 'v-update-sys-vesta' $USER_DATA/cron.conf)
 if [ ! -z "$check_cron" ]; then
     exit
 fi
@@ -45,7 +45,7 @@ hour=$(generate_password '1234567' '1')
 day='*'
 month='*'
 wday='*'
-command='sudo /usr/local/vesta/bin/v-update-sys-vesta-all'
+command='sudo /usr/local/vesta/bin/v-update-sys-vesta'
 
 # Concatenating cron string
 str="JOB='$job' MIN='$min' HOUR='$hour' DAY='$day' MONTH='$month' WDAY='$wday'"

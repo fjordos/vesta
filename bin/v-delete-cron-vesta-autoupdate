@@ -22,7 +22,7 @@ source $VESTA/conf/vesta.conf
 #----------------------------------------------------------#
 
 is_system_enabled "$CRON_SYSTEM" 'CRON_SYSTEM'
-check_cron=$(grep 'v-update-sys-vesta-all' $USER_DATA/cron.conf)
+check_cron=$(grep 'v-update-sys-vesta' $USER_DATA/cron.conf)
 if [ -z "$check_cron" ]; then
     exit
 fi
