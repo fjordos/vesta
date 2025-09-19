@@ -272,49 +272,67 @@ function send_email($to,$subject,$mailtext,$from) {
 }
 
 function list_timezones() {
-    $tz = new DateTimeZone('HAST');
-    $timezone_offsets['HAST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('HADT');
-    $timezone_offsets['HADT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('AKST');
-    $timezone_offsets['AKST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('AKDT');
-    $timezone_offsets['AKDT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('PST');
-    $timezone_offsets['PST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('PDT');
-    $timezone_offsets['PDT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('MST');
-    $timezone_offsets['MST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('MDT');
-    $timezone_offsets['MDT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('CST');
-    $timezone_offsets['CST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('CDT');
-    $timezone_offsets['CDT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('EST');
-    $timezone_offsets['EST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('EDT');
-    $timezone_offsets['EDT'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('AST');
-    $timezone_offsets['AST'] = $tz->getOffset(new DateTime);
-    $tz = new DateTimeZone('ADT');
-    $timezone_offsets['ADT'] = $tz->getOffset(new DateTime);
+    // Map timezone abbreviations to proper IANA timezone identifiers
+    $timezone_mappings = [
+        'HAST' => 'Pacific/Honolulu',        // Hawaii-Aleutian Standard Time
+        'HADT' => 'Pacific/Honolulu',        // Hawaii-Aleutian Daylight Time
+        'AKST' => 'America/Anchorage',       // Alaska Standard Time
+        'AKDT' => 'America/Anchorage',       // Alaska Daylight Time
+        'PST'  => 'America/Los_Angeles',     // Pacific Standard Time
+        'PDT'  => 'America/Los_Angeles',     // Pacific Daylight Time
+        'MST'  => 'America/Denver',          // Mountain Standard Time
+        'MDT'  => 'America/Denver',          // Mountain Daylight Time
+        'CST'  => 'America/Chicago',         // Central Standard Time
+        'CDT'  => 'America/Chicago',         // Central Daylight Time
+        'EST'  => 'America/New_York',        // Eastern Standard Time
+        'EDT'  => 'America/New_York',        // Eastern Daylight Time
+        'AST'  => 'America/Halifax',         // Atlantic Standard Time
+        'ADT'  => 'America/Halifax',         // Atlantic Daylight Time
+    ];
 
-    foreach(DateTimeZone::listIdentifiers() as $timezone){
-        $tz = new DateTimeZone($timezone);
-        $timezone_offsets[$timezone] = $tz->getOffset(new DateTime);
+    $timezone_offsets = [];
+
+    // Process the mapped timezones
+    foreach ($timezone_mappings as $abbr => $iana_timezone) {
+        try {
+            $tz = new DateTimeZone($iana_timezone);
+            $timezone_offsets[$abbr] = $tz->getOffset(new DateTime);
+        } catch (Exception $e) {
+            // Skip invalid timezones
+            continue;
+        }
     }
 
+    // Add all IANA timezone identifiers
+    foreach(DateTimeZone::listIdentifiers() as $timezone){
+        try {
+            $tz = new DateTimeZone($timezone);
+            $timezone_offsets[$timezone] = $tz->getOffset(new DateTime);
+        } catch (Exception $e) {
+            // Skip invalid timezones
+            continue;
+        }
+    }
+
+    $timezone_list = [];
     foreach($timezone_offsets as $timezone => $offset){
         $offset_prefix = $offset < 0 ? '-' : '+';
         $offset_formatted = gmdate( 'H:i', abs($offset) );
         $pretty_offset = "UTC${offset_prefix}${offset_formatted}";
-        $t = new DateTimeZone($timezone);
-        $c = new DateTime(null, $t);
-        $current_time = $c->format('H:i:s');
-        $timezone_list[$timezone] = "$timezone [ $current_time ] ${pretty_offset}";
+        
+        try {
+            // Use the mapped timezone if it's an abbreviation, otherwise use the timezone as-is
+            $tz_identifier = isset($timezone_mappings[$timezone]) ? $timezone_mappings[$timezone] : $timezone;
+            $t = new DateTimeZone($tz_identifier);
+            $c = new DateTime(null, $t);
+            $current_time = $c->format('H:i:s');
+            $timezone_list[$timezone] = "$timezone [ $current_time ] ${pretty_offset}";
+        } catch (Exception $e) {
+            // Skip if we can't create the timezone
+            continue;
+        }
     }
+    
     return $timezone_list;
 }
 
