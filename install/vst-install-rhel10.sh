@@ -30,7 +30,7 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     clamav-update crudini curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp
     GeoIP httpd ImageMagick whois libidn lsof mariadb git
     mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
-    $softwarephp phpMyAdmin phpPgAdmin postgresql postgresql-contrib
+    $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
     spamassassin sqlite sudo tar telnet unzip 
     vim vsftpd which zip"
