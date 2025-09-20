@@ -1,0 +1,57 @@
+server {
+    listen      %ip%:%proxy_ssl_port% ssl;
+    server_name %domain_idn% %alias_idn%;
+    ssl_certificate      %ssl_pem%;
+    ssl_certificate_key  %ssl_key%;
+    #error_log  /var/log/httpd/domains/%domain%.error.log error;
+    error_log  %home%/%user%/web/%domain%/logs/%domain%.error.log error;
+    access_log /var/log/nginx/json_access.log json_analytics;
+
+    location / {
+        proxy_pass      https://%ip%:%web_ssl_port%;
+        proxy_ssl_server_name   on;
+        proxy_ssl_name          $host;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        location ~* ^.+\.(%proxy_extentions%)$ {
+            root           %sdocroot%;
+            access_log     /var/log/httpd/domains/%domain%.log combined;
+            expires        max;
+            try_files      $uri $uri/index.html @fallback;
+        }
+        location ~* ^.+\.php$ {
+            fastcgi_pass    php-%user%-%domain%;
+            include         fastcgi_params;
+            fastcgi_param   SCRIPT_FILENAME    %sdocroot%/$fastcgi_script_name;
+            fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+            error_page 404 502 @fallback;
+        }
+        #http2_push_preload on;
+    }
+
+    location /error/ {
+        alias   %home%/%user%/web/%domain%/document_errors/;
+    }
+
+    location @fallback {
+        proxy_pass      https://%ip%:%web_ssl_port%;
+    }
+
+    location ~ /\.ht    {return 404;}
+    location ~ /\.svn/  {return 404;}
+    location ~ /\.git/  {return 404;}
+    location ~ /\.hg/   {return 404;}
+    location ~ /\.bzr/  {return 404;}
+
+    include %home%/%user%/conf/web/snginx.%domain_idn%.conf*;
+}
+upstream php-%user%-%domain% {
+    server unix:%home%/%user%/web/%domain%/php.socket;
+}
+

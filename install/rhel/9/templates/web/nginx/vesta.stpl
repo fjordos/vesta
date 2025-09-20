@@ -1,0 +1,69 @@
+server {
+    listen      %ip%:%proxy_ssl_port% ssl;
+    http2 on;
+    server_name %domain_idn% %alias_idn%;
+    ssl_certificate      %ssl_pem%;
+    ssl_certificate_key  %ssl_key%;
+    error_log  /var/log/httpd/domains/%domain%.error.log error;
+
+    root           %sdocroot%;
+    index index.php index.html index.htm;
+    location / {
+        return 301 https://$host:9000$request_uri;
+    }
+
+    location /error/ {
+        alias   %home%/%user%/web/%domain%/document_errors/;
+    }
+
+    location /webmail {
+        alias /usr/share/roundcubemail/;
+
+        location ~ /(config|temp|logs) {
+            return 404;
+        }
+
+        location ~ ^/webmail/(.*\.php)$ {
+            alias /usr/share/roundcubemail/$1;
+            fastcgi_pass unix:%home%/%user%/web/%domain%/php-vesta.socket;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+        }
+        location ~* ^/webmail/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+            alias /usr/share/roundcubemail/$1;
+        }
+    }
+
+    location /phpmyadmin {
+        alias /usr/share/phpMyAdmin/;
+
+        location ~ /(libraries|setup) {
+            return 404;
+        }
+
+        location ~ ^/phpmyadmin/(.*\.php)$ {
+            alias /usr/share/phpMyAdmin/$1;
+            fastcgi_pass unix:%home%/%user%/web/%domain%/php-vesta.socket;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+        }
+        location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+            alias /usr/share/phpMyAdmin/$1;
+        }
+    }
+
+
+    location ~ /\.ht    {return 404;}
+    location ~ /\.svn/  {return 404;}
+    location ~ /\.git/  {return 404;}
+    location ~ /\.hg/   {return 404;}
+    location ~ /\.bzr/  {return 404;}
+
+    disable_symlinks if_not_owner from=%docroot%;
+
+    include %home%/%user%/conf/web/snginx.%domain_idn%.conf*;
+}
+
+
