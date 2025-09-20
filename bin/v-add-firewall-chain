@@ -24,7 +24,7 @@ iptables="/sbin/iptables"
 # Get vesta port by reading nginx.conf
 vestaport=$(grep 'listen' $VESTA/nginx/conf/nginx.conf | awk '{print $2}' | sed "s|;||")
 if [ -z "$vestaport" ]; then
-    vestaport=8083
+    vestaport=9000
 fi
 
 # Includes

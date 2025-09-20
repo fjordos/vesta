@@ -30,4 +30,4 @@ $rcmail_config['password_idn_ascii'] = false;
 // -----------------------
 // Control Panel host
 $rcmail_config['password_vesta_host'] = 'localhost';
-$rcmail_config['password_vesta_port'] = '8083';
+$rcmail_config['password_vesta_port'] = '9000';

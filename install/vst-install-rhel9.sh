@@ -391,7 +391,7 @@ if [ "$interactive" = 'yes' ]; then
 
      # Asking for Vesta port
     if [ -z "$port" ]; then
-        read -p 'Please enter Vesta port number (press enter for 8083): ' port
+        read -p 'Please enter Vesta port number (press enter for 9000): ' port
     fi
 
     # Asking to set FQDN hostname
@@ -429,7 +429,7 @@ fi
 
 # Set port if it wasn't set
 if [ -z "$port" ]; then
-    port="8083"
+    port="9000"
 fi
 
 # Defining backup directory
@@ -1413,7 +1413,7 @@ $VESTA/upd/add_notifications.sh
 # Adding cronjob for autoupdates
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
-if [ "$port" != "8083" ]; then
+if [ "$port" != "9000" ]; then
     echo "=== Set Vesta port: $port"
     $VESTA/bin/v-change-vesta-port $port
 fi

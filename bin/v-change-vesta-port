@@ -18,7 +18,7 @@ fi
 # Get current vesta port by reading nginx.conf
 oldport=$(grep 'listen' $VESTA/nginx/conf/nginx.conf | awk '{print $2}' | sed "s|;||")
 if [ -z "$oldport" ]; then
-    oldport=8083
+    oldport=9000
 fi
 
 # Includes

@@ -390,7 +390,7 @@ if [ "$interactive" = 'yes' ]; then
 
      # Asking for Vesta port
     if [ -z "$port" ]; then
-        read -p 'Please enter Vesta port number (press enter for 8083): ' port
+        read -p 'Please enter Vesta port number (press enter for 9000): ' port
     fi
 
     # Asking to set FQDN hostname
@@ -428,7 +428,7 @@ fi
 
 # Set port if it wasn't set
 if [ -z "$port" ]; then
-    port="8083"
+    port="9000"
 fi
 
 # Defining backup directory
@@ -689,15 +689,8 @@ if [ -e '/etc/sysconfig/selinux' ]; then
     setenforce 0 2>/dev/null
 fi
 
-# Disabling iptables
-#service firewalld stop >/dev/null 2>&1
-
-
 # Configuring NTP synchronization
 systemctl enable --now $(systemctl list-units | grep -E 'ntpd|chronyd' | awk '{print $1}')
-
-# Disabling webalizer routine
-#rm -f /etc/cron.daily/00webalizer
 
 # Adding backup user
 adduser backup 2>/dev/null
@@ -730,7 +723,10 @@ cp -f $vestacp/sudo/admin /etc/sudoers.d/
 chmod 440 /etc/sudoers.d/admin
 
 # Configuring system env
-echo "export VESTA='$VESTA'" > /etc/profile.d/vesta.sh
+cat > /etc/profile.d/vesta.sh << EOF
+export EDITOR=vim
+export VESTA="\$VESTA"
+EOF
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
 echo '"PATH=$PATH:'$VESTA'/bin"' >> /root/.bash_profile
@@ -1438,7 +1434,7 @@ $VESTA/upd/add_notifications.sh
 # Adding cronjob for autoupdates
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
-if [ "$port" != "8083" ]; then
+if [ "$port" != "9000" ]; then
     echo "=== Set Vesta port: $port"
     $VESTA/bin/v-change-vesta-port $port
 fi
