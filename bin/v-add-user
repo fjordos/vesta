@@ -61,6 +61,9 @@ check_result $? "user creation failed" $E_INVALID
 # Adding password
 echo "$user:$password" | /usr/sbin/chpasswd
 
+# Enable Linger
+loginctl enable-linger "$user"
+
 # Building directory tree
 mkdir $HOMEDIR/$user/conf
 

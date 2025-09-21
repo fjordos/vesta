@@ -37,6 +37,9 @@ fi
 # Deleting '!' in front of the password
 /usr/sbin/usermod --unlock $user
 
+# Enable Linger
+loginctl enable-linger "$user"
+
 # Unsuspending ftp accounts
 for ftp in $(grep "^${user}_" /etc/passwd |cut -f 1 -d : ); do
     /usr/sbin/usermod --unlock $ftp 2>/dev/null
