@@ -78,13 +78,14 @@ else
 fi
 
 email=$(get_user_value '$CONTACT')
-letsparam="--non-interactive --no-eff-email --agree-tos --email ${email:-admin@$domain} --nginx "
+letsparam="certonly --non-interactive --no-eff-email --agree-tos --email ${email:-admin@$domain} --nginx "
 for D in $domain ${aliases//,/ } ; do
   letsparam="$letsparam -d $D";
 done
 
 /usr/bin/certbot $letsparam
 
+ssl_dir="$VESTA/data/users/$user/ssl"
 /bin/cat /etc/letsencrypt/live/${domain}/privkey.pem > $ssl_dir/$domain.key
 /bin/cat /etc/letsencrypt/live/${domain}/cert.pem > $ssl_dir/$domain.crt
 /bin/cat /etc/letsencrypt/live/${domain}/chain.pem > $ssl_dir/$domain.ca
