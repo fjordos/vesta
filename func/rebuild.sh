@@ -652,3 +652,7 @@ import_pgsql_database() {
 
     psql -h $HOST -U $USER $DB < $1 > /dev/null 2>&1
 }
+
+rebuild_pods() {
+    get_domain_values 'pod'
+}
