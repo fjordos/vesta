@@ -110,7 +110,7 @@ plain_list() {
     echo -ne "$USER\t$FNAME\t$LNAME\t$PACKAGE\t$WEB_TEMPLATE\t"
     echo -ne "$BACKEND_TEMPLATE\t$PROXY_TEMPLATE\t$DNS_TEMPLATE\t"
     echo -ne "$WEB_DOMAINS\t$WEB_ALIASES\t$DNS_DOMAINS\t$DNS_RECORDS\t"
-    echo -ne "$MAIL_DOMAINS\t$MAIL_ACCOUNTS\t$DATABASES\t$CRON_JOBS\t"
+    echo -ne "$MAIL_DOMAINS\t$MAIL_ACCOUNTS\t$DATABASES\t$PODS\t$CRON_JOBS\t"
     echo -ne "$DISK_QUOTA\t$BANDWIDTH\t$NS\t$HOME\t$SHELL\t$BACKUPS\t"
     echo -ne "$CONTACT\t$CRON_REPORTS\t$RKEY\t$SUSPENDED\t"
     echo -ne "$SUSPENDED_USERS\t$SUSPENDED_WEB\t$SUSPENDED_DNS\t"
@@ -119,7 +119,7 @@ plain_list() {
     echo -ne "$U_DISK_WEB\t$U_DISK_MAIL\t$U_DISK_DB\t$U_BANDWIDTH\t"
     echo -ne "$U_WEB_DOMAINS\t$U_WEB_SSL\t$U_WEB_ALIASES\t"
     echo -ne "$U_DNS_DOMAINS\t$U_DNS_RECORDS\t$U_MAIL_DOMAINS\t"
-    echo -ne "$U_MAIL_DKIM\t$U_MAIL_ACCOUNTS\t$U_DATABASES\t"
+    echo -ne "$U_MAIL_DKIM\t$U_MAIL_ACCOUNTS\t$U_DATABASES\t$U_PODS\t"
     echo -e "'$U_CRON_JOBS\t$U_BACKUPS\t$LANGUAGE\t$TIME\t$DATE"
 }
 

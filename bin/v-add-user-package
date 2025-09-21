@@ -50,6 +50,9 @@ is_package_consistent() {
     if [ "$DATABASES" != 'unlimited' ]; then
         is_int_format_valid $DATABASES 'DATABASES'
     fi
+    if [ "$PODS" != 'unlimited' ]; then
+        is_int_format_valid $PODS 'PODS'
+    fi
     if [ "$CRON_JOBS" != 'unlimited' ]; then
         is_int_format_valid $CRON_JOBS 'CRON_JOBS'
     fi

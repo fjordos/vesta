@@ -58,6 +58,11 @@ is_package_avalable() {
             check_result $E_LIMIT "Package doesn't cover DATABASE usage"
         fi
     fi
+    if [ "$PODS" != 'unlimited' ]; then
+        if [ "$PODS" -lt "$U_PODS" ]; then
+            check_result $E_LIMIT "Package doesn't cover POD usage"
+        fi
+    fi
     if [ "$CRON_JOBS" != 'unlimited' ]; then
         if [ "$CRON_JOBS" -lt "$U_CRON_JOBS" ]; then
             check_result $E_LIMIT "Package doesn't cover CRON usage"
@@ -102,6 +107,7 @@ DNS_RECORDS='$DNS_RECORDS'
 MAIL_DOMAINS='$MAIL_DOMAINS'
 MAIL_ACCOUNTS='$MAIL_ACCOUNTS'
 DATABASES='$DATABASES'
+PODS='$PODS'
 CRON_JOBS='$CRON_JOBS'
 DISK_QUOTA='$DISK_QUOTA'
 BANDWIDTH='$BANDWIDTH'
@@ -118,6 +124,7 @@ SUSPENDED_WEB='$SUSPENDED_WEB'
 SUSPENDED_DNS='$SUSPENDED_DNS'
 SUSPENDED_MAIL='$SUSPENDED_MAIL'
 SUSPENDED_DB='$SUSPENDED_DB'
+SUSPENDED_POD='$SUSPENDED_POD'
 SUSPENDED_CRON='$SUSPENDED_CRON'
 IP_AVAIL='$IP_AVAIL'
 IP_OWNED='$IP_OWNED'
@@ -137,6 +144,7 @@ U_MAIL_DOMAINS='$U_MAIL_DOMAINS'
 U_MAIL_DKIM='$U_MAIL_DKIM'
 U_MAIL_ACCOUNTS='$U_MAIL_ACCOUNTS'
 U_DATABASES='$U_DATABASES'
+U_PODS='$U_PODS'
 U_CRON_JOBS='$U_CRON_JOBS'
 U_BACKUPS='$U_BACKUPS'
 LANGUAGE='$LANGUAGE'
