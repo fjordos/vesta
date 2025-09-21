@@ -90,12 +90,12 @@
           </div>
           <?php } ?>
           <?php if($panel[$user]['PODS'] != "0") { ?>
-          <div class="l-stat__col <?php if($TAB == 'DB' ) echo 'l-stat__col--active' ?>">
-              <a href="/list/db/">
+          <div class="l-stat__col <?php if($TAB == 'POD' ) echo 'l-stat__col--active' ?>">
+              <a href="/list/pod/">
                   <div class="l-stat__col-title"><?=__('POD')?></div>
                   <ul>
-                      <li><?=__('databases')?>: <span><?=$panel[$user]['U_DATABASES']?></span></li>
-                      <li><?=__('spnd')?>: <span><?=$panel[$user]['SUSPENDED_DB']?></span></li>
+                      <li><?=__('PODs')?>: <span><?=$panel[$user]['U_PODS']?></span></li>
+                      <li><?=__('spnd')?>: <span><?=$panel[$user]['SUSPENDED_POD']?></span></li>
                   </ul>
               </a>
           </div>
