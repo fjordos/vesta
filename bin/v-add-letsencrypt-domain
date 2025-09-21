@@ -20,14 +20,6 @@ source $VESTA/func/main.sh
 source $VESTA/func/domain.sh
 source $VESTA/conf/vesta.conf
 
-# Additional argument formatting
-format_identifier_idn() {
-    identifier_idn=$identifier
-    if [[ "$identifier_idn" = *[![:ascii:]]* ]]; then
-        identifier_idn=$(idn -t --quiet -a $identifier_idn)
-    fi
-}
-
 # encode base64
 encode_base64() {
     cat |base64 |tr '+/' '-_' |tr -d '\r\n='
@@ -86,9 +78,10 @@ done
 /usr/bin/certbot $letsparam
 
 ssl_dir="$VESTA/data/users/$user/ssl"
-/bin/cat /etc/letsencrypt/live/${domain}/privkey.pem > $ssl_dir/$domain.key
-/bin/cat /etc/letsencrypt/live/${domain}/cert.pem > $ssl_dir/$domain.crt
-/bin/cat /etc/letsencrypt/live/${domain}/chain.pem > $ssl_dir/$domain.ca
+/bin/cat "$(crudini --get /etc/letsencrypt/renewal/${domain}.conf DEFAULT privkey)" > "{$ssl_dir}/${domain}.key"
+/bin/cat "$(crudini --get /etc/letsencrypt/renewal/${domain}.conf DEFAULT cert)" > "{$ssl_dir}/${domain}.crt"
+/bin/cat "$(crudini --get /etc/letsencrypt/renewal/${domain}.conf DEFAULT chain)" > "{$ssl_dir}/${domain}.ca"
+/bin/cat "$(crudini --get /etc/letsencrypt/renewal/${domain}.conf DEFAULT fullchain)" > "{$ssl_dir}/${domain}.pem"
 
 # Adding SSL
 ssl_home=$(search_objects 'web' 'LETSENCRYPT' 'yes' 'SSL_HOME')
