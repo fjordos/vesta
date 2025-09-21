@@ -59,7 +59,7 @@ shell_list() {
     echo "MAIL DOMAINS:   $MAIL_DOMAINS"
     echo "MAIL ACCOUNTS:  $MAIL_ACCOUNTS"
     echo "DATABASES:      $DATABASES"
-    echo "PODS:      $PODS"
+    echo "PODS:           $PODS"
     echo "CRON JOBS:      $CRON_JOBS"
     echo "DISK QUOTA:     $DISK_QUOTA"
     echo "BANDWIDTH:      $BANDWIDTH"
