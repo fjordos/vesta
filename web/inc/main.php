@@ -2,9 +2,7 @@
 
 session_start();
 
-file_exists('/usr/local/vesta/conf/vesta.php') ? : require_once('/usr/local/vesta/conf/vesta.php');
-
-defined('VESTA_DEBUG') || define('VESTA_DEBUG', false);
+require_once('/usr/local/vesta/conf/vesta.php');
 
 $i = 0;
 
