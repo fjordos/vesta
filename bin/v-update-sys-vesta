@@ -26,19 +26,19 @@ VERSION=${1:-$VERSION}
 
 # Checking version
 pushd $VESTA
-  git branch --remotes --list | grep -q "origin/$VERSION" >/dev/null
-popd || { echo "Error: Requested $VERSION version is not valid"; exit 1; }
+  git branch --remotes --list | grep -q "origin/$VERSION"
+popd >/dev/null || { echo "Error: Requested $VERSION version is not valid"; exit 1; }
 
 #----------------------------------------------------------#
 #                       Action                             #
 #----------------------------------------------------------#
 
 pushd $VESTA
-  git pull origin "$VERSION" --rebase | logger >/dev/null
-popd || { echo "Error: Failed to pull $VERSION version"; exit 1; }
+  git pull origin "$VERSION" --rebase
+popd 2>&1 | logger >/dev/null || { echo "Error: Failed to pull $VERSION version"; exit 1; }
 
 # Run update script
-"$VESTA"/install/vst-update.sh | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version"; exit 1; }
+"$VESTA"/install/vst-update.sh 2>&1 | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version"; exit 1; }
 
 #----------------------------------------------------------#
 #                       Vesta                              #
