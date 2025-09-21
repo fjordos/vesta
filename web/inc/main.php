@@ -2,11 +2,9 @@
 
 session_start();
 
-define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
-define('JS_LATEST_UPDATE', '1758252713');
-file_exists('/usr/local/vesta/conf/vesta.php') ? : require_once('../../conf/vesta.php');
+file_exists('../../../conf/vesta.php') ? : require_once('../../../conf/vesta.php');
 
-defined('VESTA_DEBUG') ? : define('VESTA_DEBUG', false);
+defined('VESTA_DEBUG') || define('VESTA_DEBUG', false);
 
 $i = 0;
 

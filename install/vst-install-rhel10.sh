@@ -744,7 +744,8 @@ touch $VESTA/data/queue/backup.pipe $VESTA/data/queue/disk.pipe \
     $VESTA/data/queue/webstats.pipe $VESTA/data/queue/restart.pipe \
     $VESTA/data/queue/traffic.pipe $VESTA/log/system.log \
     $VESTA/log/nginx-error.log $VESTA/log/auth.log
-chmod 750 $VESTA/conf $VESTA/data/users $VESTA/data/ips $VESTA/log
+chmod 751 $VESTA/conf
+chmod 750 $VESTA/data/users $VESTA/data/ips $VESTA/log
 chmod -R 750 $VESTA/data/queue
 chmod 660 $VESTA/log/*
 rm -f /var/log/vesta
@@ -1422,6 +1423,34 @@ RestartSec=10s
 WantedBy=multi-user.target
 EOF
 rm -f /etc/rc.d/init.d/vesta
+
+mkdir -p /root/bin
+cat > /root/bin/php-fpm-fixer.sh << EOF
+#!/bin/bash
+source /etc/profile.d/vesta.sh
+#needsrestart=0
+for F in \$(/bin/journalctl -S "1 minutes ago" | /bin/grep 'ERROR: \[pool ' | /bin/sed 's#.*ERROR: \[pool \([a-z0-9]*-.*\)\].*#/etc/opt/remi/*/php-fpm.d/\1.conf#' | /bin/sort | /bin/uniq) ; do
+ # needsrestart=1
+  U=\$(grep "user =" \$F | sed 's/user = //')
+  /bin/rm -f \$F
+  /usr/local/vesta/bin/v-rebuild-web-domains \$U no
+done
+
+#if [[ \$needsrestart ]] ; then
+#  for I in httpd.service nginx.service $(systemctl list-units | grep php-fpm | awk '{print \$2}') ; do
+#    systemctl reset-failed \$I
+#    systemctl is-active \$I || systemctl start \$I
+#  done
+#fi
+EOF
+
+cat > "$VESTA/conf/vesta.conf" << EOF
+<?php
+define('VESTA_DEBUG', "true");
+define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
+define('JS_LATEST_UPDATE', '1758252713');
+EOF
+
 systemctl daemon-reload
 systemctl enable vesta vesta-php
 systemctl start vesta vesta-php
