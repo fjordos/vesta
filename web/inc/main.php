@@ -3,6 +3,7 @@
 session_start();
 
 require_once('/usr/local/vesta/conf/vesta.php');
+require_once(dirname(__FILE__).'/constants.php');
 
 $i = 0;
 

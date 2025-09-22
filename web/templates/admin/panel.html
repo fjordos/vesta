@@ -24,7 +24,7 @@
       </div>
       <!-- /.l-menu -->
       <div class="l-profile noselect">
-        <a class="l-profile__notifications <? if($panel[$user]['NOTIFICATIONS'] == 'yes') echo " updates"; ?>">&nbsp;</a>
+        <a class="l-profile__notifications <? if($panel[$user]['NOTIFICATIONS'] == 'yes') echo 'updates'; ?>">&nbsp;</a>
         <a class="l-profile__username" href="/edit/user/?user=<?php echo $user; ?>"><?=$user?></a>
         <a class="l-profile__logout" href="/logout/"> <?=__('Log out')?> </a>
       </div>
@@ -96,7 +96,7 @@
               </a>
           </div>
           <?php } ?>
-          <?php if($panel[$user]['PODS'] != "0") { ?>
+          <?php if($panel[$user]['PODS'] != "0" || 1) { ?>
           <div class="l-stat__col <?php if($TAB == 'POD' ) echo 'l-stat__col--active' ?>">
               <a href="/list/pod/">
                   <div class="l-stat__col-title"><?=__('POD')?></div>
