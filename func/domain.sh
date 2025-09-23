@@ -434,6 +434,12 @@ update_domain_zone() {
             eval echo -e "\"$fields\""|sed "s/%quote%/'/g" >> $zn_conf
         fi
     done < $USER_DATA/dns/$domain.conf
+    cat > /etc/unbound/conf.d/$domain.conf << EOF
+server:
+  auth-zone: name: \"$domain.\"
+  zonefile: \"$zn_conf\"
+  fallback-enabled: no
+EOF
 }
 
 # Update zone serial

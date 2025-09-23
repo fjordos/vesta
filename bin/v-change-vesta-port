@@ -40,18 +40,19 @@ is_int_format_valid "$port" 'port number'
 #                       Action                             #
 #----------------------------------------------------------#
 
-sed -i "s|$oldport;|$port;|g" $VESTA/nginx/conf/nginx.conf
-systemctl reload vesta
+oldport=$(crudini --get /etc/vesta/vesta.conf DEFAULT VESTA_PORT)
+crudini --set /etc/vesta/vesta.conf DEFAULT VESTA_PORT "$port"
+systemctl reload vesta nginx
 sed -i "s|$oldport;|$port;|g" $VESTA/data/templates/web/nginx/vesta.stpl
 $VESTA/bin/v-rebuild-web-domains admin
 if [ -f "/etc/roundcube/plugins/password/config.inc.php" ]; then
     sed -i "s|'$oldport'|'$port'|g" /etc/roundcube/plugins/password/config.inc.php
 fi
-sed -i "s|'$oldport'|'$port'|g" $VESTA/data/firewall/rules.conf
-$VESTA/bin/v-update-firewall
-systemctl restart fail2ban.service
-sed -i "s| $oldport | $port |g" /etc/iptables.rules
-systemctl restart vesta
+sed -i "s|'$oldport'|'$port'|g" "$VESTA/data/firewall/rules.conf"
+firewall-cmd --remove-port="${oldport}/tcp" --permanent
+firewall-cmd --add-port="${port}/tcp" --permanent
+firewall-cmd --reload
+#$VESTA/bin/v-update-firewall
 
 #----------------------------------------------------------#
 #                       Vesta                              #

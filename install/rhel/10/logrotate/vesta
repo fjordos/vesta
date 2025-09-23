@@ -4,4 +4,7 @@
     size 30k
     yearly
     create 0600 root root
+    postrotate
+        /bin/systemctl reload vesta || true
+    endscript
 }

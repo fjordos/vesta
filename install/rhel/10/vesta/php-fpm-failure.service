@@ -1,0 +1,7 @@
+[Unit]
+Description=My failure handler for php-fpm
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/vesta/vesta.conf
+ExecStart=$VESTA/func/php-fpm-fixer.sh

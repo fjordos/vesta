@@ -32,7 +32,7 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
     $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
-    spamassassin sqlite sudo tar telnet unzip yeBa6cexoaP4Aiphapaefeuz
+    spamassassin sqlite sudo tar telnet unbound unzip
     vim vsftpd which zip"
 # TODO: softaculous
 
@@ -873,6 +873,13 @@ chown root:mail $VESTA/ssl/*
 chmod 660 $VESTA/ssl/*
 rm /tmp/vst.pem
 
+mkdir -p /etc/vesta
+[[ -e /etc/vesta/vesta.conf ]] || cp $VESTA/conf/vesta.conf /etc/vesta/vesta.conf
+crudini --set /etc/vesta/vesta.conf DEFAULT VESTA "$VESTA"
+crudini --set /etc/vesta/vesta.conf DEFAULT VESTA_PORT "$port"
+crudini --set /etc/vesta/vesta.conf DEFAULT TIMEZONE "$(timedatectl 2>/dev/null | grep "Time zone: " | awk '{print $3}')"
+crudini --set /etc/vesta/vesta.conf DEFAULT HOSTNAME "$(hostname)"
+
 #----------------------------------------------------------#
 #                     Configure Nginx                      #
 #----------------------------------------------------------#
@@ -954,31 +961,28 @@ fi
 
 
 #----------------------------------------------------------#
-#                     Configure PHP-FPM                    #
-#----------------------------------------------------------#
-
-if [ "$phpfpm" = 'yes' ]; then
-    cp -f $vestacp/php-fpm/www.conf /etc/php-fpm.d/
-    systemctl enable --now php-fpm
-    check_result $? "php-fpm start failed"
-fi
-
-
-#----------------------------------------------------------#
 #                     Configure PHP                        #
 #----------------------------------------------------------#
 
-ZONE=$(timedatectl 2>/dev/null|grep Timezone|awk '{print $2}')
-if [ -e '/etc/sysconfig/clock' ]; then
-    source /etc/sysconfig/clock
-fi
+ZONE=$(timedatectl 2>/dev/null | grep "Time zone: " | awk '{print $3}')
 if [ -z "$ZONE" ]; then
     ZONE='UTC'
 fi
 for pconf in $(find /etc/php* -name php.ini); do
-    sed -i "s|;date.timezone =|date.timezone = $ZONE|g" $pconf
-    sed -i 's%_open_tag = Off%_open_tag = On%g' $pconf
+    php_dir=$(dirname "$pconf")
+    grep -P "^date.timezone" $php_dir/vesta.ini > /dev/null 2>&1 || echo "date.timezone = $ZONE" >> $php_dir/vesta.ini
+    grep -P "^short_open_tag" $php_dir/vesta.ini > /dev/null 2>&1 || echo "short_open_tag = On" >> $php_dir/vesta.ini
 done
+
+
+#----------------------------------------------------------#
+#                     Configure PHP-FPM                    #
+#----------------------------------------------------------#
+
+if [ "$phpfpm" = 'yes' ]; then
+    systemctl enable --now php-fpm
+    check_result $? "php-fpm start failed"
+fi
 
 
 #----------------------------------------------------------#
@@ -1106,6 +1110,13 @@ if [ "$named" = 'yes' ]; then
     check_result $? "named start failed"
 fi
 
+#----------------------------------------------------------#
+#                      Configure Unbound                    #
+#----------------------------------------------------------#
+
+cp -f $vestacp/unbound/* /etc/unbound/
+chown -R root:unbound /etc/unbound/conf.d
+systemctl enable --now unbound
 
 #----------------------------------------------------------#
 #                      Configure Exim                      #
@@ -1175,18 +1186,9 @@ if [ "$clamd" = 'yes' ]; then
     mkdir -p /var/log/clamav /var/run/clamav
     chown clam:clam /var/log/clamav /var/run/clamav
     chown -R clam:clam /var/lib/clamav
-    if [ "$release" -ge '7' ]; then
-        cp -f $vestacp/clamav/clamd.service /usr/lib/systemd/system/
-        systemctl --system daemon-reload
-    fi
     /usr/bin/freshclam
-    if [ "$release" -ge '7' ]; then
-        sed -i "s/nofork/foreground/" /usr/lib/systemd/system/clamd.service
-        systemctl daemon-reload
-    fi
-    systemctl enable clamd
-    service clamd start
-    #check_result $? "clamd start failed"
+    systemctl enable --now clamd.service clamav-freshclam-once.timer
+    check_result $? "clamd start failed"
 fi
 
 
@@ -1195,8 +1197,7 @@ fi
 #----------------------------------------------------------#
 
 if [ "$spamd" = 'yes' ]; then
-    systemctl enable spamassassin
-    service spamassassin start
+    systemctl enable --now spamassassin
     check_result $? "spamassassin start failed"
     if [ "$release" -ge '7' ]; then
         groupadd -g 1001 spamd
@@ -1359,103 +1360,18 @@ if [ "$softaculous" = 'yes' ]; then
     $VESTA/bin/v-add-vesta-softaculous
 fi
 
-# Create certbot post hook for SSL certificates
-cat > /etc/letsencrypt/renewal-hooks/post/vesta-deploy.sh << EOF
-#!/bin/bash
-#
-. /etc/profile.d/vesta.sh
-
-CERTBOT_USER="\$(/bin/ls -d /home/*/web/"$CERTBOT_DOMAIN" | awk -F / '{print \$3}')"
-
-/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/privkey.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.key
-/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/cert.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.crt
-/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/chain.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.ca
-/bin/cat /etc/letsencrypt/live/\${CERTBOT_DOMAIN}/fullchain.pem > "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.pem
-
-for I in key crt ca pem ; do
-  cp -f  "\$VESTA"/data/users/ssl/\${CERTBOT_DOMAIN}.\${I} /home/\$user/conf/web/ssl.\${CERTBOT_DOMAIN}.\${I}
-done
-
-/bin/systemctl reload nginx.service
-/bin/systemctl reload httpd.service
-EOF
-chmod +x /etc/letsencrypt/renewal-hooks/post/vesta-deploy.sh
+crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-post-hook.sh"
 
 # Starting Vesta service
-#vesta_user=admin
-#vesta_group=admin
-cat > /etc/systemd/system/vesta.service << EOF
-[Unit]
-Description=Run vesta web server
-Documentation=https://www.vestacp.com/
-After=network-online.target remote-fs.target nss-lookup.target
-Wants=network-online.target vesta-php.service
-
-[Service]
-Type=forking
-PIDFile=/run/vesta-nginx.pid
-ExecStart=/usr/sbin/nginx -c /usr/local/vesta/src/rpm/conf/nginx.conf
-Restart=on-failure
-RestartSec=10s
-
-[Install]
-WantedBy=multi-user.target
-EOF
-cat > /etc/systemd/system/vesta-php.service << EOF
-[Unit]
-Description=Run php for vesta web server
-Documentation=https://www.vestacp.com/
-After=network-online.target remote-fs.target nss-lookup.target
-Wants=network-online.target
-
-[Service]
-Type=notify
-PIDFile=/run/vesta-php.pid
-ExecStart=/usr/sbin/php-fpm --nodaemonize -y /usr/local/vesta/src/rpm/conf/php-fpm.conf
-ExecReload=/bin/kill -USR2 $MAINPID
-PrivateTmp=true
-RuntimeDirectory=php-fpm
-RuntimeDirectoryMode=0755
-Restart=on-failure
-RestartSec=10s
-
-[Install]
-WantedBy=multi-user.target
-EOF
-rm -f /etc/rc.d/init.d/vesta
-
-mkdir -p /root/bin
-cat > /root/bin/php-fpm-fixer.sh << EOF
-#!/bin/bash
-source /etc/profile.d/vesta.sh
-#needsrestart=0
-for F in \$(/bin/journalctl -S "1 minutes ago" | /bin/grep 'ERROR: \[pool ' | /bin/sed 's#.*ERROR: \[pool \([a-z0-9]*-.*\)\].*#/etc/opt/remi/*/php-fpm.d/\1.conf#' | /bin/sort | /bin/uniq) ; do
- # needsrestart=1
-  U=\$(grep "user =" \$F | sed 's/user = //')
-  /bin/rm -f \$F
-  /usr/local/vesta/bin/v-rebuild-web-domains \$U no
-done
-
-#if [[ \$needsrestart ]] ; then
-#  for I in httpd.service nginx.service $(systemctl list-units | grep php-fpm | awk '{print \$2}') ; do
-#    systemctl reset-failed \$I
-#    systemctl is-active \$I || systemctl start \$I
-#  done
-#fi
-EOF
-
-cat > "$VESTA/conf/vesta.conf" << EOF
-<?php
-define('VESTA_DEBUG', "true");
-define('VESTA_CMD', '/usr/bin/sudo /usr/local/vesta/bin/');
-define('JS_LATEST_UPDATE', '1758252713');
-EOF
+cp-f "$vestacp/vesta/vesta.service" /etc/systemd/system/
+cp-f "$vestacp/vesta/vesta-php.service" /etc/systemd/system/
+cp -f "$vestacp/vesta/vesta.php" /etc/vesta/
 
 systemctl daemon-reload
 systemctl enable vesta vesta-php
 systemctl start vesta vesta-php
 check_result $? "vesta start failed"
-chown admin:admin $VESTA/data/sessions
+chown admin:admin "$VESTA/data/sessions"
 
 # Adding notifications
 $VESTA/upd/add_notifications.sh
@@ -1463,10 +1379,7 @@ $VESTA/upd/add_notifications.sh
 # Adding cronjob for autoupdates
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
-if [ "$port" != "9000" ]; then
-    echo "=== Set Vesta port: $port"
-    $VESTA/bin/v-change-vesta-port $port
-fi
+$VESTA/bin/v-change-vesta-port $port
 
 firewall-cmd --permanent --add-port=$port/tcp
 

@@ -941,9 +941,7 @@ fi
 #----------------------------------------------------------#
 
 if [ "$phpfpm" = 'yes' ]; then
-    cp -f $vestacp/php-fpm/www.conf /etc/php-fpm.d/
-    chkconfig php-fpm on
-    service php-fpm start
+    systemctl enable --now php-fpm
     check_result $? "php-fpm start failed"
 fi
 

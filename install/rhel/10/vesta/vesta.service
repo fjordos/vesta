@@ -1,0 +1,16 @@
+[Unit]
+Description=Run vesta web server
+Documentation=https://www.vestacp.com/
+After=network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target vesta-php.service
+
+[Service]
+Type=forking
+PIDFile=/run/vesta-nginx.pid
+EnvironmentFile=/etc/vesta/vesta.conf
+ExecStart=/usr/sbin/nginx -c /etc/vesta/nginx.conf
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
