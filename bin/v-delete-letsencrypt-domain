@@ -41,7 +41,7 @@ is_object_value_exist 'web' 'DOMAIN' "$domain" '$LETSENCRYPT'
 # Delete SSL
 $BIN/v-delete-web-domain-ssl $user $domain $restart >/dev/null 2>&1
 check_result $? "SSL delete" >/dev/null
-
+rm -rf /etc/letsencrypt/{archive,live}/"$domain" /etc/letsencrypt/renewal/"$domain".conf  >/dev/null 2>&1
 
 #----------------------------------------------------------#
 #                       Vesta                              #

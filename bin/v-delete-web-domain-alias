@@ -71,6 +71,13 @@ if [ ! -z "$PROXY_SYSTEM" ] && [ ! -z "$PROXY" ]; then
     fi
 fi
 
+if [ -e "/etc/letsencrypt/renewal/${domain}.conf" ]; then
+  letsparam="enhance --non-interactive --nginx "
+  for D in $domain ${ALIAS//,/ } ; do
+    letsparam="$letsparam -d $D";
+  done
+  certbot $letsparam
+fi
 
 #----------------------------------------------------------#
 #                       Vesta                              #

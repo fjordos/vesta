@@ -75,13 +75,11 @@ for D in $domain ${aliases//,/ } ; do
   letsparam="$letsparam -d $D";
 done
 
-/usr/bin/certbot $letsparam
+/usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos \
+  --email ${email:-admin@$domain} --nginx
+  -d  $domain${aliases:+,}${aliases}
 
-ssl_dir="$VESTA/data/users/$user/ssl"
-/bin/cat "$(crudini --get /etc/letsencrypt/renewal/"${domain}".conf DEFAULT privkey)" > "${ssl_dir}/${domain}.key"
-/bin/cat "$(crudini --get /etc/letsencrypt/renewal/"${domain}".conf DEFAULT cert)" > "${ssl_dir}/${domain}.crt"
-/bin/cat "$(crudini --get /etc/letsencrypt/renewal/"${domain}".conf DEFAULT chain)" > "${ssl_dir}/${domain}.ca"
-/bin/cat "$(crudini --get /etc/letsencrypt/renewal/"${domain}".conf DEFAULT fullchain)" > "${ssl_dir}/${domain}.pem"
+CERTBOT_DOMAIN="$domain" $VESTA/func/certbot-post-hook.sh
 
 # Adding SSL
 ssl_home=$(search_objects 'web' 'LETSENCRYPT' 'yes' 'SSL_HOME')

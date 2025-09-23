@@ -44,9 +44,6 @@ if [ -z "$aliases" ]; then
     aliases="$ALIAS"
 fi
 
-# Adding cronjob scheduler for LE
-$BIN/v-add-cron-letsencrypt-job
-
 # Adding LE task
 echo "$BIN/v-add-letsencrypt-domain $user $domain '$aliases' yes yes" \
     >> $VESTA/data/queue/letsencrypt.pipe
