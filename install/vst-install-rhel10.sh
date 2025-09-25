@@ -1103,8 +1103,10 @@ fi
 
 if [ "$named" = 'yes' ]; then
     cp -f $vestacp/named/named.conf /etc/
-    chown root:named /etc/named.conf
-    chmod 640 /etc/named.conf
+
+    [[ -f /etc/named-options.conf ]] || cp -f $vestacp/named/named-options.conf /etc/
+    chown root:named /etc/named.conf /etc/named-options.conf
+    chmod 640 /etc/named.conf /etc/named-options.conf
     firewall-cmd --permanent --add-service=dns
     systemctl enable --now named
     check_result $? "named start failed"
