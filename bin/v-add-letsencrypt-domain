@@ -59,33 +59,23 @@ fi;
 # Checking wildcard alias
 if [ "$aliases" = "*.$domain" ]; then
     echo "[$(date)] : Checking wildcard alias" >> /usr/local/vesta/log/letsencrypt.log
-    wildcard='yes'
-    proto="dns-01"
+    proto="--dns-rfc2136"
     if [ ! -e "$VESTA/data/users/$user/dns/$domain.conf" ]; then
         echo "[$(date)] : EXIT=DNS domain $domain doesn't exist" >> /usr/local/vesta/log/letsencrypt.log
         check_result $E_NOTEXIST "DNS domain $domain doesn't exist"
     fi
-else
-    proto="http-01"
 fi
 
 email=$(get_user_value '$CONTACT')
-letsparam="certonly --non-interactive --no-eff-email --agree-tos --email ${email:-admin@$domain} --nginx "
-for D in $domain ${aliases//,/ } ; do
-  letsparam="$letsparam -d $D";
-done
-
 /usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos \
-  --email ${email:-admin@$domain} --nginx
-  -d  $domain${aliases:+,}${aliases}
-
-CERTBOT_DOMAIN="$domain" $VESTA/func/certbot-post-hook.sh
+  --email "${email:-admin@$domain}" "${proto:=--nginx}" --post-hook "$VESTA"/func/certbot-post-hook.sh \
+  -d  "$domain${aliases:+,}${aliases}"
 
 # Adding SSL
 ssl_home=$(search_objects 'web' 'LETSENCRYPT' 'yes' 'SSL_HOME')
 $BIN/v-delete-web-domain-ssl $user $domain >/dev/null 2>&1
-echo "[$(date)] : v-add-web-domain-ssl $user $domain $ssl_dir $ssl_home" >> /usr/local/vesta/log/letsencrypt.log
-$BIN/v-add-web-domain-ssl $user $domain $ssl_dir $ssl_home
+echo "[$(date)] : v-add-web-domain-ssl $user $domain $VESTA/data/users/${user}/ssl $ssl_home" >> /usr/local/vesta/log/letsencrypt.log
+$BIN/v-add-web-domain-ssl $user $domain "$VESTA"/data/users/"${user}"/ssl "$ssl_home"
 exitstatus=$?
 echo "[$(date)] : v-add-web-domain-ssl status: $exitstatus" >> /usr/local/vesta/log/letsencrypt.log
 if [ "$exitstatus" -ne '0' ]; then
