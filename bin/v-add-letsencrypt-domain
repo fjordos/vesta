@@ -67,8 +67,8 @@ if [ "$aliases" = "*.$domain" ]; then
 fi
 
 email=$(get_user_value '$CONTACT')
-/usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos \
-  --email "${email:-admin@$domain}" "${proto:=--nginx}" --post-hook "$VESTA"/func/certbot-post-hook.sh \
+/usr/bin/certbot run --non-interactive --no-eff-email --agree-tos \
+  --email "${email:-admin@$domain}" "${proto:=--nginx}" --deploy-hook "$VESTA"/func/certbot-deploy-hook.sh \
   -d  "$domain${aliases:+,}${aliases}"
 
 # Adding SSL
