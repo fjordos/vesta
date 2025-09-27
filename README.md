@@ -1,4 +1,4 @@
-[Vesta Control Panel](http://vestacp.com/)
+[Vesta Control Panel - Modified by FjordOS](http://vestacp.com/)
 ==================================================
 
 Vesta is back under active development as of 25 February 2024. We are commited to open source, and will engage with the community to identify the new roadmap for Vesta. Stay tuned!
@@ -8,6 +8,7 @@ Vesta is back under active development as of 25 February 2024. We are commited t
 * Vesta is an open source hosting control panel.
 * Vesta has a clean and focused interface without the clutter.
 * Vesta has the latest of very innovative technologies.
+* FjordOS started to support it, and temporary it's supported on CentOS Stream 10 and RHEL 10 by this "fork".
 
 How to install (2 step)
 ----------------------------
@@ -18,12 +19,12 @@ ssh root@your.server
 
 Download the installation script, and run it:
 ```bash
-curl https://vestacp.com/pub/vst-install.sh | bash
+curl https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install-rhel10.sh | bash
 ```
 
 How to install (3 step)
 ----------------------------
-If the above example does not work, try this 3 step method:
+If the above example does not work, try this 3-step method:
 Connect to your server as root via SSH
 ```bash
 ssh root@your.server
@@ -31,11 +32,11 @@ ssh root@your.server
 
 Download the installation script:
 ```bash
-curl -O https://vestacp.com/pub/vst-install.sh
+curl -O https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install-rhel10.sh
 ```
 Then run it:
 ```bash
-bash vst-install.sh
+bash vst-install-rhel10.sh
 ```
 
 License
