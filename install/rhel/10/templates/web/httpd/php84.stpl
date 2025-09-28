@@ -1,0 +1,30 @@
+<VirtualHost %ip%:%web_ssl_port%>
+
+    ServerName %domain_idn%
+    %alias_string%
+    ServerAdmin %email%
+    DocumentRoot %sdocroot%
+    ScriptAlias /cgi-bin/ %home%/%user%/web/%domain%/cgi-bin/
+    Alias /vstats/ %home%/%user%/web/%domain%/stats/
+    Alias /error/ %home%/%user%/web/%domain%/document_errors/
+    CustomLog /var/log/%web_system%/domains/%domain%.bytes bytes
+    CustomLog %home%/%user%/web/%domain%/logs/%domain%.log combined
+    ErrorLog %home%/%user%/web/%domain%/logs/%domain%.error.log
+    <Directory %sdocroot%>
+        AllowOverride All
+        SSLRequireSSL
+        Options +Includes -Indexes -ExecCGI
+    </Directory>
+
+    ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php.socket|fcgi://localhost/%sdocroot%/
+
+    SSLEngine on
+    SSLVerifyClient none
+    SSLCertificateFile %ssl_crt%
+    SSLCertificateKeyFile %ssl_key%
+    %ssl_ca_str%SSLCertificateChainFile %ssl_ca%
+
+    IncludeOptional %home%/%user%/conf/web/s%web_system%.%domain_idn%.conf*
+
+</VirtualHost>
+
