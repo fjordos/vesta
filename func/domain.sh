@@ -436,8 +436,8 @@ update_domain_zone() {
     done < $USER_DATA/dns/$domain.conf
     cat > /etc/unbound/conf.d/$domain.conf << EOF
 server:
-  auth-zone: name: \"$domain.\"
-  zonefile: \"$zn_conf\"
+  auth-zone: name: "$domain."
+  zonefile: "$zn_conf"
   fallback-enabled: no
 EOF
 }
