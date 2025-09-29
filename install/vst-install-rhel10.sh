@@ -7,15 +7,11 @@
 #----------------------------------------------------------#
 export PATH="$PATH:/sbin"
 . /etc/os-release
-RHOST='r.vestacp.com'
-REPO='cmmnt'
 VERSION='rhel'
 VESTA='/usr/local/vesta'
 memory="$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' |grep [0-9])"
-arch="$(uname -i)"
 os="$ID"
 release="${VERSION_ID%%.*}"
-codename="${os}_$release"
 vestacp="$VESTA/install/$VERSION/$release"
 phpv="84"
 vesta_version=master
@@ -248,10 +244,6 @@ if [ ! -e '/usr/bin/wget' ]; then
     yum -y install wget
     check_result $? "Can't install wget"
 fi
-
-# Checking repository availability
-wget -q "c.vestacp.com/GPG.txt" -O /dev/null
-check_result $? "No access to Vesta repository"
 
 # Checking installed packages
 tmpfile=$(mktemp -p /tmp)
@@ -933,6 +925,8 @@ if [ "$apache" = 'yes'  ]; then
         sed -i "s/^/#/" 00-dav.conf 00-lua.conf 00-proxy.conf
     fi
     sed -i 's#.*LoadModule proxy_module modules/mod_proxy.so#LoadModule proxy_module modules/mod_proxy.so#' /etc/httpd/conf.modules.d/00-proxy.conf
+    sed -i 's#.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#' /etc/httpd/conf.modules.d/00-proxy.conf
+    sed -i 's#.*LoadModule proxy_http_module modules/mod_proxy_http.so#LoadModule proxy_http_module modules/mod_proxy_http.so#' /etc/httpd/conf.modules.d/00-proxy.conf
     echo > /etc/httpd/conf.d/vesta.conf
     cd /var/log/httpd
     touch access_log error_log suexec.log
