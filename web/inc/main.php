@@ -262,10 +262,10 @@ function get_percentage($used=0,$total=0): int|string
     return $percent;
 }
 
-function send_email($to,$subject,$mailtext,$from): void
+function send_email_old($to,$subject,$mailtext,$from): void
 {
     $charset = "utf-8";
-    $to = '<'.$to.'>';
+    //$to = '<'.$to.'>';
     $boundary = '--' . md5( uniqid("myboundary") );
     $priorities = array( '1 (Highest)', '2 (High)', '3 (Normal)', '4 (Low)', '5 (Lowest)' );
     $priority = $priorities[2];
@@ -278,6 +278,52 @@ function send_email($to,$subject,$mailtext,$from): void
     $header .= "Content-Transfer-Encoding: $ctencoding\nX-Mailer: Php/libMailv1.3\n";
     $message = $mailtext;
     mail($to, $subject, $message, $header);
+}
+
+function send_email($to, $subject, $mailtext, $from): void
+{
+    $charset = "utf-8";
+
+    // Validate and sanitize email addresses
+    $to = filter_var(trim($to), FILTER_VALIDATE_EMAIL);
+    $from = filter_var(trim($from), FILTER_VALIDATE_EMAIL);
+
+    if (!$to || !$from) {
+        error_log("Invalid email addresses provided to send_email function");
+        return;
+    }
+
+    $priorities = array('1 (Highest)', '2 (High)', '3 (Normal)', '4 (Low)', '5 (Lowest)');
+    $priority = $priorities[2];
+    $ctencoding = "8bit";
+    $sep = chr(13) . chr(10);
+    $disposition = "inline";
+
+    // Properly encode subject
+    $subject = "=?$charset?B?" . base64_encode($subject) . "?=";
+
+    // Build headers with proper formatting
+    $headers = array();
+    $headers[] = "From: <$from>";
+    $headers[] = "Sender: <$from>";
+    $headers[] = "Reply-To: <$from>";
+    $headers[] = "X-Priority: $priority";
+    $headers[] = "MIME-Version: 1.0";
+    $headers[] = "Content-Type: text/plain; charset=$charset";
+    $headers[] = "Content-Transfer-Encoding: $ctencoding";
+    $headers[] = "X-Mailer: VestaCP/PHP-" . PHP_VERSION;
+
+    // Join headers with proper line endings
+    $header_string = implode($sep, $headers);
+
+    $message = $mailtext;
+
+    // Send email
+    $result = mail($to, $subject, $message, $header_string);
+
+    if (!$result) {
+        error_log("Failed to send email to: $to from: $from");
+    }
 }
 
 function list_timezones(): array
