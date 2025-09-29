@@ -51,15 +51,16 @@ is_password_valid
 #----------------------------------------------------------#
 
 # Generating hashed password
-salt=$(generate_password "$PW_MATRIX" "8")
-md5="{MD5}$($BIN/v-generate-password-hash md5 $salt <<<$password)"
+#salt=$(generate_password "$PW_MATRIX" "8")
+#md5="{MD5}$($BIN/v-generate-password-hash md5 $salt <<<$password)"
+crypt="$(doveadm pw -s SHA512-CRYPT -p "$password")"
 
 # Adding account info into password file
 if [[ "$MAIL_SYSTEM" =~ exim ]]; then
     if [ "$quota" = 'unlimited' ]; then
         quota='0'
     fi
-    str="$account:$md5:$user:mail::$HOMEDIR/$user:$quota"
+    str="$account:$crypt:$user:mail::$HOMEDIR/$user:$quota"
     echo $str >> $HOMEDIR/$user/conf/mail/$domain/passwd
 fi
 
@@ -78,7 +79,7 @@ if [[ "$quota" -eq '0' ]]; then
 fi
 
 str="ACCOUNT='$account' ALIAS='' AUTOREPLY='no' FWD='' FWD_ONLY=''"
-str="$str MD5='$md5' QUOTA='$quota' U_DISK='0' SUSPENDED='no'"
+str="$str MD5='$crypt' QUOTA='$quota' U_DISK='0' SUSPENDED='no'"
 str="$str TIME='$time' DATE='$date'"
 echo "$str" >> $USER_DATA/mail/$domain.conf
 chmod 660 $USER_DATA/mail/$domain.conf
