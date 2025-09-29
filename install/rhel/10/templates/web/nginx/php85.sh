@@ -13,7 +13,7 @@ chown "$user":"$user" "$home_dir/$user/web/$domain/tmp"
 phpv=85
 oldphpv="$(ls /etc/opt/remi/php*/php-fpm.d/${user}-${domain}.conf | awk -F'/' '{print $5}')"
 rm -f "/etc/opt/remi/${oldphpv}/php-fpm.d/${user}-${domain}.conf"
-sudo systemctl reload "php${oldphpv}-php-fpm" || sudo systemctl start "php${oldphpv}-php-fpm"
+sudo systemctl reload "${oldphpv}-php-fpm" || sudo systemctl start "${oldphpv}-php-fpm"
 cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}-${domain}.conf" << EOF
 [${user}-${domain}]
 user = $user

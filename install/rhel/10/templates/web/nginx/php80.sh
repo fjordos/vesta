@@ -10,7 +10,7 @@ mkdir -p "$home_dir/$user/web/$domain/tmp"
 chmod 0700  "$home_dir/$user/web/$domain/tmp"
 chown "$user":"$user" "$home_dir/$user/web/$domain/tmp"
 
-phpv=84
+phpv=80
 oldphpv="$(ls /etc/opt/remi/php*/php-fpm.d/${user}-${domain}.conf | awk -F'/' '{print $5}')"
 rm -f "/etc/opt/remi/${oldphpv}/php-fpm.d/${user}-${domain}.conf"
 sudo systemctl reload "${oldphpv}-php-fpm" || sudo systemctl start "${oldphpv}-php-fpm"
