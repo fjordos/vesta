@@ -21,7 +21,7 @@ source $VESTA/conf/vesta.conf
 # Checking quota package
 quota=$(which --skip-alias --skip-functions xfs_quota 2>/dev/null)
 if [ $? -ne 0 ]; then
-    xfs_info $(df -P /home | tail -n 1 | awk '{print $1}') >/dev/null 2>&1
+    xfs_info $(df -P /home/$user | tail -n 1 | awk '{print $1}') >/dev/null 2>&1
     check_result $? "Only the XFS Quota supported. Please reformat the /home disk with XFS or attach another disk." $E_UPDATE
 fi
 
@@ -31,16 +31,6 @@ fi
 
 # Adding group and user quota on /home partition
 mnt=$(df -P /home | awk '{print $6}' | tail -n1)
-lnr=$(cat -n /etc/fstab | grep -v "#" | awk '{print $1,$3}' | grep "$mnt$" | cut -f 1 -d ' ')
-opt=$(sed -n ${lnr}p /etc/fstab | awk '{print $4}')
-#fnd='usrquota\|grpquota\|usrjquota=aquota.user\|grpjquota=aquota.group\|jqfmt=vfsv0'
-fnd='uquota,gquota,pquota'
-if [ $(echo $opt | tr ',' '\n' | grep -x $fnd | wc -l) -ne 5 ]; then
-    old=$(echo $(echo $opt | tr ',' '\n' | grep -v 'uquota') | tr ' ' ',')
-    new='uquota,gquota,pquota'
-    sed -i "$lnr s/$opt/$old,$new/" /etc/fstab
-    mount -o remount $mnt
-fi
 
 # Updating vesta.conf value
 if [ -z "$(grep DISK_QUOTA $VESTA/conf/vesta.conf)" ]; then

@@ -37,11 +37,9 @@ iquota=$(($quota * 64))
 
 # Checking unlinmited quota
 if [ "$quota" = 'unlimited' ]; then
-  #xfs_quota -x -c "'limit -u bsoft=0 bhard=0 isoft=0 ihard=0 '$user" /home/$user
-  xfs_quota -x -c "'limit -g bsoft=0 bhard=0 isoft=0 ihard=0 '$user" /home/$user
+  xfs_quota -x -c "limit -g bsoft=0 bhard=0 isoft=0 ihard=0 $user" $(df -P /home/$user | tail -n 1 | awk '{print $1}')
 else
-  #xfs_quota -x -c "'limit -u bsoft=$quota bhard=$quota isoft=$iquota ihard=$iquota '$user" /home/$user
-  xfs_quota -x -c "'limit -g bsoft=$quota bhard=$quota isoft=$iquota ihard=$iquota '$user" /home/$user
+  xfs_quota -x -c "limit -g bsoft=$quota bhard=$quota isoft=$iquota ihard=$iquota $user" $(df -P /home/$user | tail -n 1 | awk '{print $1}')
 fi
 
 #----------------------------------------------------------#
