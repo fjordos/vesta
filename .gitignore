@@ -1,3 +1,5 @@
+/conf
+/data
 *.tar
 *.zip
 *.gzip
@@ -7,3 +9,4 @@
 src/react/node_modules
 src/react/build
 /.idea
+/qodana.yaml
