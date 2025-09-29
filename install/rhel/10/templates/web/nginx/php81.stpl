@@ -6,19 +6,10 @@ server {
     #error_log  /var/log/httpd/domains/%domain%.error.log error;
     error_log  %home%/%user%/web/%domain%/logs/%domain%.error.log error;
 
+    root %sdocroot%;
     location / {
-        proxy_pass      https://%ip%:%web_ssl_port%;
-        proxy_ssl_server_name   on;
-        proxy_ssl_name          $host;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        try_files       $uri/index.html @fallback;
         location ~* ^.+\.(%proxy_extentions%)$ {
-            root           %sdocroot%;
             access_log     /var/log/httpd/domains/%domain%.log combined;
             expires        max;
             try_files      $uri $uri/index.html @fallback;
