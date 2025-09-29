@@ -9,7 +9,7 @@ server {
     root           %sdocroot%;
     index index.php index.html index.htm;
     location / {
-        return 301 https://$host:${VESTA_PORT}$request_uri;
+        return 301 https://$host:8083request_uri;
     }
 
     location /error/ {
