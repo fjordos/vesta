@@ -1,4 +1,4 @@
-#!/usr/local/vesta/php/bin/php
+#!/usr/bin/php
 <?php
 error_reporting(NULL);
 if (empty($argv[1])) {
@@ -13,7 +13,7 @@ if ((!empty($argv[4])) && ($argv[4] == 'no')) {
      exit;
 }
 
-define('NO_AUTH_REQUIRED',true);
+const NO_AUTH_REQUIRED = true;
 
 include("/usr/local/vesta/web/inc/main.php");
 
