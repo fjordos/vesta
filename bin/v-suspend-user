@@ -40,9 +40,6 @@ fi
 
 # Disable Linger
 loginctl disable-linger "$user"
-loginctl terminate-user "$user"
-sleep 5
-loginctl kill-user "$user"
 
 # Suspending ftp accounts
 for ftp in $(grep "^${user}_" /etc/passwd |cut -f 1 -d : ); do
