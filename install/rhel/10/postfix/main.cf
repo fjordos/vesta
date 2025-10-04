@@ -1,0 +1,83 @@
+
+# Postfix main configuration converted from Exim
+
+# Basic settings
+myhostname = $(hostname -f)
+mydomain = $(hostname -d)
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+
+# Network and relay settings
+mynetworks = 127.0.0.0/8
+relay_domains = proxy:mysql:/etc/postfix/mysql_relay_domains.cf
+virtual_mailbox_domains = proxy:mysql:/etc/postfix/mysql_virtual_domains.cf
+virtual_mailbox_maps = proxy:mysql:/etc/postfix/mysql_virtual_mailboxes.cf
+virtual_alias_maps = proxy:mysql:/etc/postfix/mysql_virtual_aliases.cf
+
+# TLS settings
+smtpd_tls_cert_file = /usr/local/vesta/ssl/certificate.crt
+smtpd_tls_key_file = /usr/local/vesta/ssl/certificate.key
+smtpd_use_tls = yes
+smtpd_tls_security_level = may
+smtp_tls_security_level = may
+smtpd_tls_protocols = !SSLv2, !SSLv3
+smtp_tls_protocols = !SSLv2, !SSLv3
+
+# SASL authentication
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+
+# Virtual mailbox settings
+virtual_mailbox_base = /home
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+virtual_minimum_uid = 5000
+virtual_mailbox_limit = 0
+
+# Message size limits
+message_size_limit = 104857600
+mailbox_size_limit = 0
+
+# DKIM support (requires opendkim)
+milter_default_action = accept
+milter_protocol = 2
+smtpd_milters = unix:/var/lib/opendkim/socket
+non_smtpd_milters = $smtpd_milters
+
+# Restrictions
+smtpd_helo_required = yes
+smtpd_helo_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_invalid_helo_hostname,
+    reject_non_fqdn_helo_hostname
+
+smtpd_sender_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_non_fqdn_sender,
+    reject_unknown_sender_domain
+
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_non_fqdn_recipient,
+    reject_unknown_recipient_domain,
+    reject_unauth_destination,
+    check_client_access hash:/etc/postfix/client_access,
+    check_sender_access hash:/etc/postfix/sender_access,
+    reject_rbl_client zen.spamhaus.org,
+    reject_rbl_client bl.spamcop.net,
+    permit
+
+smtpd_data_restrictions =
+    reject_unauth_pipelining,
+    permit
+
+# Bounce settings
+bounce_queue_lifetime = 2d
+maximal_queue_lifetime = 7d
