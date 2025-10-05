@@ -5,7 +5,6 @@ server {
     ssl_certificate_key  %ssl_key%;
     #error_log  /var/log/httpd/domains/%domain%.error.log error;
     error_log  %home%/%user%/web/%domain%/logs/%domain%.error.log error;
-    access_log /var/log/nginx/json_access.log json_analytics;
 
     location / {
         proxy_pass      https://%ip%:%web_ssl_port%;
