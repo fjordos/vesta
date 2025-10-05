@@ -5,7 +5,8 @@ server {
     ssl_certificate      %ssl_pem%;
     ssl_certificate_key  %ssl_key%;
     error_log  /var/log/httpd/domains/%domain%.error.log error;
-
+    http2 on;
+    http3 on;
     root           %sdocroot%;
     index index.php index.html index.htm;
     location / {

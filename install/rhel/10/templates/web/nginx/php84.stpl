@@ -5,7 +5,8 @@ server {
     ssl_certificate_key  %ssl_key%;
     #error_log  /var/log/httpd/domains/%domain%.error.log error;
     error_log  %home%/%user%/web/%domain%/logs/%domain%.error.log error;
-
+    http2 on;
+    http3 on;
     root %sdocroot%;
     location / {
         try_files       $uri/index.html @fallback;
