@@ -43,7 +43,7 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
       ;;
 esac
 
-[[ -e "$VESTA"/install/vst-update-"$type".sh ]] && source "$VESTA"/install/vst-update-"$type".sh
-[[ -e "$VESTA"/install/vst-update-custom.sh ]] && source "$VESTA"/install/vst-update-custom.sh
+[[ -x "$VESTA/install/vst-update-$type.sh" ]] && source "$VESTA/install/vst-update-$type.sh"
+[[ -x /root/vst-update-custom.sh ]] && source /root/vst-update-custom.sh
 
 exit
