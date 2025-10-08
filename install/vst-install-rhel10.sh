@@ -29,7 +29,7 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
     spamassassin sqlite sudo tar telnet unbound unzip
-    vim vsftpd which zip"
+    vim vsftpd which zip composer"
 # TODO: softaculous
 
 # Defining help function
@@ -721,8 +721,17 @@ export VESTA="\$VESTA"
 EOF
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
-echo '"PATH=$PATH:'$VESTA'/bin"' >> /root/.bash_profile
-echo 'export "$PATH"' >> /root/.bash_profile
+
+cat > /etc/profile.d/xdg_runtime_dir.sh << EOF
+export XDG_RUNTIME_DIR=/run/user/\$(id -u)
+EOF
+
+cat >> /root/.bash_profile << EOF
+PATH="\$PATH:\$VESTA/bin"
+export PATH
+[[ -f "\$VESTA/conf/vesta.conf" ]] && source "\$VESTA/conf/vesta.conf"
+export REDISCLI_AUTH="\$REDIS_AUTH_PASSWORD"
+EOF
 source /root/.bash_profile
 
 # Configuring logrotate for vesta logs
@@ -1088,6 +1097,40 @@ if [ "$postgresql" = 'yes' ]; then
         cp -f $vestacp/pga/phpPgAdmin.conf /etc/httpd/conf.d/
     fi
     cp -f $vestacp/pga/config.inc.php /etc/phpPgAdmin/
+fi
+
+
+#----------------------------------------------------------#
+#                     Configure Redis                      #
+#----------------------------------------------------------#
+
+# Configure Redis with AUTH
+if [ -e "/usr/bin/redis-cli" ]; then
+    # Generate Redis AUTH password
+    redis_auth_pass=$(gen_pass)
+    
+    # Backup original Redis config
+    cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
+    
+    # Configure Redis with AUTH
+    sed -i "s/^# requirepass foobared/requirepass $redis_auth_pass/" /etc/redis/redis.conf
+    sed -i 's/^bind 127.0.0.1/bind 127.0.0.1/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory <bytes>/maxmemory 256mb/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory-policy noeviction/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
+    
+    # Additional security settings
+    echo "protected-mode yes" >> /etc/redis/redis.conf
+    echo "timeout 300" >> /etc/redis/redis.conf
+    
+    # Enable and start Redis
+    systemctl enable --now redis
+    check_result $? "redis start failed"
+    
+    # Store Redis AUTH password securely in Vesta config
+    echo "REDIS_AUTH_PASSWORD='$redis_auth_pass'" >> $VESTA/conf/vesta.conf
+    chmod 600 $VESTA/conf/vesta.conf
+    
+    echo "Redis configured with AUTH password: $redis_auth_pass"
 fi
 
 

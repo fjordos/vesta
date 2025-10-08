@@ -1,0 +1,311 @@
+#!/bin/bash
+
+# Vesta Redis AUTH and User Management Script
+
+#----------------------------------------------------------#
+#                    Variable&Function                     #
+#----------------------------------------------------------#
+
+# Includes
+source $VESTA/func/main.sh
+source $VESTA/conf/vesta.conf
+
+# Get Redis AUTH password from config and set environment variable
+if [ -z "$REDIS_AUTH_PASSWORD" ]; then
+    echo "Error: Redis AUTH password not found in configuration"
+    exit 1
+fi
+
+# Set Redis CLI AUTH environment variable to avoid command line warnings
+export REDISCLI_AUTH="$REDIS_AUTH_PASSWORD"
+
+
+#----------------------------------------------------------#
+#                    AUTH Functions                        #
+#----------------------------------------------------------#
+
+# Test Redis AUTH connection
+test_redis_auth() {
+    redis-cli ping >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+#----------------------------------------------------------#
+#                 Redis User Management                    #
+#----------------------------------------------------------#
+
+# Create Redis user with ACL (Redis 6.0+)
+create_redis_user() {
+    local username="$1"
+    local password="$2"
+    local permissions="${3:-+@read +@write -@dangerous}"
+    local key_pattern="${4:-${username}:*}"
+
+    if [ -z "$username" ] || [ -z "$password" ]; then
+        echo "Error: Username and password required"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    # Create user with ACL
+    redis-cli ACL SETUSER "$username" on ">${password}" ~"$key_pattern" $permissions >/dev/null 2>&1
+    check_result $? "Failed to create Redis user: $username"
+
+    # Store user metadata
+    redis-cli HMSET "vesta:redis:users:$username" \
+        "created" "$(date +%s)" \
+        "permissions" "$permissions" \
+        "key_pattern" "$key_pattern" \
+        "status" "active" \
+        "created_by" "${USER:-root}" >/dev/null 2>&1
+
+    echo "Redis user created successfully: $username"
+    echo "Permissions: $permissions"
+    echo "Key pattern: $key_pattern"
+}
+
+# Delete Redis user
+delete_redis_user() {
+    local username="$1"
+
+    if [ -z "$username" ]; then
+        echo "Error: Username required"
+        exit 1
+    fi
+
+    if [ "$username" = "default" ]; then
+        echo "Error: Cannot delete default Redis user"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    # Delete ACL user
+    redis-cli ACL DELUSER "$username" >/dev/null 2>&1
+    check_result $? "Failed to delete Redis user: $username"
+
+    # Remove user metadata
+    redis-cli DEL "vesta:redis:users:$username" >/dev/null 2>&1
+
+    echo "Redis user deleted: $username"
+}
+
+# List Redis users
+list_redis_users() {
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    echo "Redis Users:"
+    echo "============"
+
+    # List ACL users
+    redis-cli ACL LIST | while read acl_line; do
+        if [ ! -z "$acl_line" ]; then
+            username=$(echo "$acl_line" | grep -o 'user [^ ]*' | cut -d' ' -f2)
+            status=$(echo "$acl_line" | grep -o '\(on\|off\)')
+
+            if [ ! -z "$username" ]; then
+                echo "User: $username"
+                echo "  Status: $status"
+                echo "  ACL: $acl_line"
+
+                # Get metadata if available
+                created=$(redis-cli HGET "vesta:redis:users:$username" "created" 2>/dev/null)
+                if [ ! -z "$created" ] && [ "$created" != "(nil)" ]; then
+                    created_date=$(date -d "@$created" 2>/dev/null || echo "Unknown")
+                    permissions=$(redis-cli HGET "vesta:redis:users:$username" "permissions" 2>/dev/null)
+                    key_pattern=$(redis-cli HGET "vesta:redis:users:$username" "key_pattern" 2>/dev/null)
+
+                    echo "  Created: $created_date"
+                    echo "  Permissions: $permissions"
+                    echo "  Key Pattern: $key_pattern"
+                fi
+                echo "  ---"
+            fi
+        fi
+    done
+}
+
+# Change Redis user password
+change_redis_user_password() {
+    local username="$1"
+    local new_password="$2"
+
+    if [ -z "$username" ] || [ -z "$new_password" ]; then
+        echo "Error: Username and new password required"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    # Change ACL user password
+    redis-cli ACL SETUSER "$username" ">${new_password}" >/dev/null 2>&1
+    check_result $? "Failed to change password for user: $username"
+
+    # Update metadata
+    redis-cli HSET "vesta:redis:users:$username" "password_changed" "$(date +%s)" >/dev/null 2>&1
+
+    echo "Password changed successfully for user: $username"
+}
+
+# Enable/Disable Redis user
+toggle_redis_user() {
+    local username="$1"
+    local action="$2"  # on or off
+
+    if [ -z "$username" ] || [ -z "$action" ]; then
+        echo "Error: Username and action (on/off) required"
+        exit 1
+    fi
+
+    if [ "$action" != "on" ] && [ "$action" != "off" ]; then
+        echo "Error: Action must be 'on' or 'off'"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    redis-cli ACL SETUSER "$username" "$action" >/dev/null 2>&1
+    check_result $? "Failed to $action user: $username"
+
+    # Update metadata
+    redis-cli HSET "vesta:redis:users:$username" \
+        "status" "$action" \
+        "status_changed" "$(date +%s)" >/dev/null 2>&1
+
+    echo "User $username is now $action"
+}
+
+# Set Redis user permissions
+set_redis_user_permissions() {
+    local username="$1"
+    local permissions="$2"
+    local key_pattern="${3:-*}"
+
+    if [ -z "$username" ] || [ -z "$permissions" ]; then
+        echo "Error: Username and permissions required"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    # Reset user permissions and set new ones
+    redis-cli ACL SETUSER "$username" reset on ~"$key_pattern" $permissions >/dev/null 2>&1
+    check_result $? "Failed to set permissions for user: $username"
+
+    # Update metadata
+    redis-cli HMSET "vesta:redis:users:$username" \
+        "permissions" "$permissions" \
+        "key_pattern" "$key_pattern" \
+        "permissions_changed" "$(date +%s)" >/dev/null 2>&1
+
+    echo "Permissions updated for user: $username"
+    echo "New permissions: $permissions"
+    echo "Key pattern: $key_pattern"
+}
+
+# Get Redis user info
+get_redis_user_info() {
+    local username="$1"
+
+    if [ -z "$username" ]; then
+        echo "Error: Username required"
+        exit 1
+    fi
+
+    if ! test_redis_auth; then
+        echo "Error: Redis AUTH failed"
+        exit 1
+    fi
+
+    echo "Redis User Information: $username"
+    echo "================================="
+
+    # Get ACL info
+    acl_info=$(redis-cli ACL GETUSER "$username" 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        echo "ACL Information:"
+        echo "$acl_info"
+        echo ""
+    fi
+
+    # Get metadata
+    created=$(redis-cli HGET "vesta:redis:users:$username" "created" 2>/dev/null)
+    if [ ! -z "$created" ] && [ "$created" != "(nil)" ]; then
+        echo "Metadata:"
+        echo "  Created: $(date -d "@$created" 2>/dev/null || echo "Unknown")"
+        echo "  Permissions: $(redis-cli HGET "vesta:redis:users:$username" "permissions" 2>/dev/null)"
+        echo "  Key Pattern: $(redis-cli HGET "vesta:redis:users:$username" "key_pattern" 2>/dev/null)"
+        echo "  Status: $(redis-cli HGET "vesta:redis:users:$username" "status" 2>/dev/null)"
+        echo "  Created By: $(redis-cli HGET "vesta:redis:users:$username" "created_by" 2>/dev/null)"
+
+        password_changed=$(redis-cli HGET "vesta:redis:users:$username" "password_changed" 2>/dev/null)
+        if [ ! -z "$password_changed" ] && [ "$password_changed" != "(nil)" ]; then
+            echo "  Password Changed: $(date -d "@$password_changed" 2>/dev/null || echo "Unknown")"
+        fi
+
+        status_changed=$(redis-cli HGET "vesta:redis:users:$username" "status_changed" 2>/dev/null)
+        if [ ! -z "$status_changed" ] && [ "$status_changed" != "(nil)" ]; then
+            echo "  Status Changed: $(date -d "@$status_changed" 2>/dev/null || echo "Unknown")"
+        fi
+
+        permissions_changed=$(redis-cli HGET "vesta:redis:users:$username" "permissions_changed" 2>/dev/null)
+        if [ ! -z "$permissions_changed" ] && [ "$permissions_changed" != "(nil)" ]; then
+            echo "  Permissions Changed: $(date -d "@$permissions_changed" 2>/dev/null || echo "Unknown")"
+        fi
+    else
+        echo "No metadata found for user: $username"
+    fi
+}
+
+
+########
+# Ation #
+########
+case "$1" in
+    "create")
+        create_redis_user "$2" "$3" "$4" "$5"
+        ;;
+    "delete")
+        delete_redis_user "$2"
+        ;;
+    "list")
+        list_redis_users
+        ;;
+    "password")
+        change_redis_user_password "$2" "$3"
+        ;;
+    "suspend")
+        toggle_redis_user "$2" off
+        ;;
+    "unsuspend")
+        toggle_redis_user "$2" on
+        ;;
+    "*")
+        echo "Error: Invalid action. Use one of: create, delete, list, password, suspend, unsuspend"
+        exit 1
+        ;;
+esac
