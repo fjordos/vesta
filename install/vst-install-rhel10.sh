@@ -1166,7 +1166,11 @@ if [ "$exim" = 'yes' ]; then
     cp -f $vestacp/exim/exim.conf /etc/exim/
     cp -f $vestacp/exim/dnsbl.conf /etc/exim/
     cp -f $vestacp/exim/spam-blocks.conf /etc/exim/
+    cp -f $vestacp/exim/limit.conf /etc/exim/
     touch /etc/exim/white-blocks.conf
+    pwgen 24 1 > /etc/exim/srs.conf
+    chmod 640 /etc/exim/*.conf
+    chown root:exim /etc/exim/*.conf
 
     if [ "$spamd" = 'yes' ]; then
         sed -i "s/#SPAM/SPAM/g" /etc/exim/exim.conf

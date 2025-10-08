@@ -6,5 +6,6 @@ passdb {
 userdb {
   driver = passwd-file
   args = username_format=%n /etc/exim/domains/%d/passwd
-    override_fields = uid=dovecot gid=dovecot
+  override_fields = uid=dovecot gid=dovecot
+  #auth_verbose = default
 }
