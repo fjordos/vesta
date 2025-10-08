@@ -882,6 +882,12 @@ crudini --set /etc/vesta/vesta.conf DEFAULT TIMEZONE "$(timedatectl 2>/dev/null 
 crudini --set /etc/vesta/vesta.conf DEFAULT HOSTNAME "$(hostname)"
 
 #----------------------------------------------------------#
+#                     Configure Letsencrypt                #
+#----------------------------------------------------------#
+
+cp -rf $vestacp/letsencrypt/ /etc/letsencrypt
+
+#----------------------------------------------------------#
 #                     Configure Nginx                      #
 #----------------------------------------------------------#
 

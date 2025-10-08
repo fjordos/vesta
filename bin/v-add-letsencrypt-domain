@@ -64,12 +64,17 @@ if [ "$aliases" = "*.$domain" ]; then
         echo "[$(date)] : EXIT=DNS domain $domain doesn't exist" >> /usr/local/vesta/log/letsencrypt.log
         check_result $E_NOTEXIST "DNS domain $domain doesn't exist"
     fi
+else
+    proto="--nginx"
 fi
 
-email=$(get_user_value '$CONTACT')
-/usr/bin/certbot run --non-interactive --no-eff-email --agree-tos \
-  --email "${email:-admin@$domain}" "${proto:=--nginx}" --deploy-hook "$VESTA"/func/certbot-deploy-hook.sh \
-  -d  "$domain${aliases:+,}${aliases}"
+if certbot certificates --cert-name "$domain" | grep "Domains:" ; then
+   certbot --expand --non-interactive "${proto}" -d "${domain}${aliases:+,}${aliases}"
+else
+  email=$(get_user_value '$CONTACT')
+  /usr/bin/certbot run --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
+    "${proto:=--nginx}" -d "${domain}${aliases:+,}${aliases}"
+fi
 
 # Adding SSL
 ssl_home=$(search_objects 'web' 'LETSENCRYPT' 'yes' 'SSL_HOME')
