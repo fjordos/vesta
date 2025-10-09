@@ -1,0 +1,13 @@
+[Unit]
+Description=A template for restart K8s workloads by a file change
+Wants=network-online.target
+After=network-online.target podman.service
+#RequiresMountsFor=%t/containers
+
+[Path]
+TriggerLimitIntervalSec=60s
+PathModified=%I
+Unit=podman-kube-restart@%i.service
+
+[Install]
+WantedBy=default.target
