@@ -1,3 +1,5 @@
 #!/bin/bash
 
-echo OK
+DEBUG=1
+
+/bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/rhel/10/letsencrypt/" "/etc/letsencrypt"
