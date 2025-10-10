@@ -43,7 +43,7 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
       ;;
 esac
 
-[[ -x "$VESTA/install/vst-update-$type.sh" ]] && source "$VESTA/install/vst-update-$type.sh"
-[[ -x /root/vst-update-custom.sh ]] && source /root/vst-update-custom.sh
+[[ -x "$VESTA/install/vst-update-$type.sh" ]] && source "$VESTA/install/vst-update-$type.sh" 2>&1 | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version (STEP 2)"; exit 1; }
+[[ -x /root/vst-update-custom.sh ]] && source /root/vst-update-custom.sh 2>&1 | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version (STEP 3)"; exit 1; }
 
 exit

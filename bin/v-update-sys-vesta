@@ -14,18 +14,18 @@
 source /etc/profile
 
 # Includes
-source $VESTA/func/main.sh
-source $VESTA/conf/vesta.conf
+source "$VESTA"/func/main.sh
+source "$VESTA"/conf/vesta.conf
 
 # Use the current Vesta version or update the system to the VERSION definition
-VERSION=${1:-$VERSION}
+VERSION="${1:-$VERSION}"
 
 #----------------------------------------------------------#
 #                    Verifications                         #
 #----------------------------------------------------------#
 
 # Checking version
-pushd $VESTA
+pushd "$VESTA"
   git branch --remotes --list | grep -q "origin/$VERSION"
 popd >/dev/null || { echo "Error: Requested $VERSION version is not valid"; exit 1; }
 
@@ -33,12 +33,12 @@ popd >/dev/null || { echo "Error: Requested $VERSION version is not valid"; exit
 #                       Action                             #
 #----------------------------------------------------------#
 
-pushd $VESTA
+pushd "$VESTA"
   git pull origin "$VERSION" --rebase
 popd 2>&1 | logger >/dev/null || { echo "Error: Failed to pull $VERSION version"; exit 1; }
 
 # Run update script
-"$VESTA"/install/vst-update.sh 2>&1 | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version"; exit 1; }
+source "$VESTA/install/vst-update.sh" 2>&1 | logger >/dev/null || { echo "Error: Failed to run the update script on $VERSION version (STEP 1)"; exit 1; }
 
 #----------------------------------------------------------#
 #                       Vesta                              #
