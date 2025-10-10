@@ -1,33 +1,33 @@
 #!/bin/bash -x
 #
 . /etc/profile.d/vesta.sh
-env
+
 [[ -n "${RENEWED_DOMAIN}" ]] || RENEWED_DOMAIN="${RENEWED_DOMAINS%% *}"
 [[ -n "${RENEWED_DOMAIN}" ]] || (echo "Undefined RENEWED_DOMAINS"; env ; exit 1)
 [[ -n "${RENEWED_LINEAGE}" ]] || (echo "Undefined RENEWED_LINEAGE"; env ; exit 1)
 [[ -d "${RENEWED_LINEAGE}" ]] || (echo "The RENEWED_LINEAGE is not a valid directory"; env ; exit 1)
 RENEWED_USER="$(/bin/grep "DOMAIN='${RENEWED_DOMAIN}'" "${VESTA}"/data/users/*/web.conf | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
 
-ssl_dir="${VESTA}/data/users/${RENEWED_USER}/ssl"
-/bin/cat "${RENEWED_LINEAGE}/privkey.pem" > "$ssl_dir/${RENEWED_DOMAIN}.key"
-/bin/cat "${RENEWED_LINEAGE}/cert.pem" > "$ssl_dir/${RENEWED_DOMAIN}.crt"
-/bin/cat "${RENEWED_LINEAGE}/chain.pem" > "$ssl_dir/${RENEWED_DOMAIN}.ca"
-/bin/cat "${RENEWED_LINEAGE}/fullchain.pem" > "$ssl_dir/${RENEWED_DOMAIN}.pem"
+VESTA_SSL="${VESTA}/data/users/${RENEWED_USER}/ssl"
+/bin/cat "${RENEWED_LINEAGE}"/privkey.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
+/bin/cat "${RENEWED_LINEAGE}"/cert.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".crt
+/bin/cat "${RENEWED_LINEAGE}"/chain.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".ca
+/bin/cat "${RENEWED_LINEAGE}"/fullchain.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".pem
 
 for I in key crt ca pem ; do
-  cp -f  "$ssl_dir/${RENEWED_DOMAIN}.${I}" "/home/$RENEWED_USER/conf/web/ssl.${RENEWED_DOMAIN}.${I}"
+  cp -f  "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
 done
-
+env
 if ! (grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
   sed -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
-    -i "${VESTA}/data/users/${RENEWED_USER}/web.conf"
+    -i "${VESTA}"/data/users/"${RENEWED_USER}"/web.conf
 fi
-"${VESTA}/bin/v-rebuild-web-domains" "${RENEWED_USER}"
+"${VESTA}"/bin/v-rebuild-web-domains "${RENEWED_USER}"
 
-. "$VESTA/conf/vesta.conf"
+. "$VESTA"/conf/vesta.conf
 if [[ "$VESTA_CERTIFICATE" == "$RENEWED_USER:$RENEWED_DOMAIN" ]] ; then
-  "$VESTA/bin/v-add-sys-vesta-ssl" "$RENEWED_USER" "$RENEWED_DOMAIN"
+  "${VESTA}"/bin/v-add-sys-vesta-ssl "$RENEWED_USER" "$RENEWED_DOMAIN"
 fi
 if [[ "$MAIL_CERTIFICATE" == "$RENEWED_USER:$RENEWED_DOMAIN" ]] ; then
-  "$VESTA/bin/v-add-sys-mail-ssl" "$RENEWED_USER" "$RENEWED_DOMAIN"
+  "${VESTA}"/bin/v-add-sys-mail-ssl "$RENEWED_USER" "$RENEWED_DOMAIN"
 fi
