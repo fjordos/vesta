@@ -6,9 +6,9 @@
 [[ -n "${RENEWED_DOMAIN}" ]] || (echo "Undefined RENEWED_DOMAINS"; env ; exit 1)
 [[ -n "${RENEWED_LINEAGE}" ]] || (echo "Undefined RENEWED_LINEAGE"; env ; exit 1)
 [[ -d "${RENEWED_LINEAGE}" ]] || (echo "The RENEWED_LINEAGE is not a valid directory"; env ; exit 1)
-RENEWED_USER="$(/bin/ls -d /home/*/web/"${RENEWED_DOMAIN}" | awk -F / '{print $3}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
+RENEWED_USER="$(/bin/grep "DOMAIN='${RENEWED_DOMAIN}'" "${VESTA}"/data/users/*/web.conf | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
 
-ssl_dir="$VESTA/data/users/${RENEWED_USER}/ssl"
+ssl_dir="${VESTA}/data/users/${RENEWED_USER}/ssl"
 /bin/cat "${RENEWED_LINEAGE}/privkey.pem" > "$ssl_dir/${RENEWED_DOMAIN}.key"
 /bin/cat "${RENEWED_LINEAGE}/cert.pem" > "$ssl_dir/${RENEWED_DOMAIN}.crt"
 /bin/cat "${RENEWED_LINEAGE}/chain.pem" > "$ssl_dir/${RENEWED_DOMAIN}.ca"
