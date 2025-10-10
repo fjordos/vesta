@@ -19,7 +19,7 @@ for I in key crt ca pem ; do
 done
 
 if ! (grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
-  sed -E "s/^\(DOMAIN='${RENEWED_DOMAIN}' .*\) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
+  sed -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
     -i "${VESTA}/data/users/${RENEWED_USER}/web.conf"
 fi
 "${VESTA}/bin/v-rebuild-web-domains" "${RENEWED_USER}"
