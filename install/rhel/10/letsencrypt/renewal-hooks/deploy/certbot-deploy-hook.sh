@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 . /etc/profile.d/vesta.sh
-
+env
 [[ -n "${RENEWED_DOMAIN}" ]] || RENEWED_DOMAIN="${RENEWED_DOMAINS%% *}"
 [[ -n "${RENEWED_DOMAIN}" ]] || (echo "Undefined RENEWED_DOMAINS"; env ; exit 1)
 [[ -n "${RENEWED_LINEAGE}" ]] || (echo "Undefined RENEWED_LINEAGE"; env ; exit 1)
@@ -18,8 +18,8 @@ for I in key crt ca pem ; do
   cp -f  "$ssl_dir/${RENEWED_DOMAIN}.${I}" "/home/$RENEWED_USER/conf/web/ssl.${RENEWED_DOMAIN}.${I}"
 done
 
-if ! (grep -E "DOMAIN='emails.thermotechnika.eu' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
-  sed -E "s/SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)'/SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'/" \
+if ! (grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
+  sed -E "s/^\(DOMAIN='${RENEWED_DOMAIN}' .*\) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
     -i "${VESTA}/data/users/${RENEWED_USER}/web.conf"
 fi
 "${VESTA}/bin/v-rebuild-web-domains" "${RENEWED_USER}"
