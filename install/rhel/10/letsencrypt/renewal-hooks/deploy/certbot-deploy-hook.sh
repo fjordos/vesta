@@ -1,5 +1,6 @@
 #!/bin/bash -x
 #
+DEBUG=""
 . /etc/profile.d/vesta.sh
 
 [[ -n "${RENEWED_DOMAIN}" ]] || RENEWED_DOMAIN="${RENEWED_DOMAINS%% *}"
@@ -9,17 +10,17 @@
 RENEWED_USER="$(/bin/grep "DOMAIN='${RENEWED_DOMAIN}'" "${VESTA}"/data/users/*/web.conf | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
 
 VESTA_SSL="${VESTA}/data/users/${RENEWED_USER}/ssl"
-/bin/cp "${RENEWED_LINEAGE}"/privkey.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
-/bin/cp "${RENEWED_LINEAGE}"/cert.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".crt
-/bin/cp "${RENEWED_LINEAGE}"/chain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".ca
-/bin/cp "${RENEWED_LINEAGE}"/fullchain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".pem
+/bin/cp "${DEBUG:+-v}" ${RENEWED_LINEAGE}"/privkey.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
+/bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/cert.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".crt
+/bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/chain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".ca
+/bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/fullchain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".pem
 
 for I in key crt ca pem ; do
-  /bin/cp -f  "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
+  /bin/cp -f "${DEBUG:+-v}" "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
 done
 env
 if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
-  /bin/sed -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
+  /bin/sed "${DEBUG:+--debug}" -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
     -i "${VESTA}"/data/users/"${RENEWED_USER}"/web.conf
 fi
 "${VESTA}"/bin/v-rebuild-web-domains "${RENEWED_USER}"
