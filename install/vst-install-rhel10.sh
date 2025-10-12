@@ -20,8 +20,9 @@ vesta_version=master
 softwarephp="php$phpv php$phpv-php-bcmath php$phpv-php-cli php$phpv-php-common 
     php$phpv-php-fpm php$phpv-php-gd php$phpv-php-imap php$phpv-php-mbstring 
     php$phpv-php-mcrypt php$phpv-php-mysqlnd php$phpv-php-pdo php$phpv-php-pgsql 
-    php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-xmlrpc
-    php$phpv-php-ioncube-loader"
+    php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-apcu
+    php$phpv-php-pecl-imagick
+    php$phpv-php-pecl-xmlrpc php$phpv-php-pecl-zip php$phpv-php-ioncube-loader"
 software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     clamav-update crudini curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp
     GeoIP httpd ImageMagick whois libidn lsof mariadb git certbot python3-certbot-nginx
