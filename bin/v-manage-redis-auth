@@ -43,7 +43,7 @@ test_redis_auth() {
 create_redis_user() {
     local username="$1"
     local password="$2"
-    local permissions="${3:-+@read +@write +@connection -@dangerous}"
+    local permissions="${3:-+@all -@admin -@dangerous}"
     local key_pattern="${4:-${username}:*}"
 
     if [ -z "$username" ] || [ -z "$password" ]; then
