@@ -10,7 +10,7 @@ DEBUG=""
 RENEWED_USER="$(/bin/grep "DOMAIN='${RENEWED_DOMAIN}'" "${VESTA}"/data/users/*/web.conf | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
 
 VESTA_SSL="${VESTA}/data/users/${RENEWED_USER}/ssl"
-/bin/cp "${DEBUG:+-v}" ${RENEWED_LINEAGE}"/privkey.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
+/bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/privkey.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
 /bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/cert.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".crt
 /bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/chain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".ca
 /bin/cp "${DEBUG:+-v}" "${RENEWED_LINEAGE}"/fullchain.pem "${VESTA_SSL}"/"${RENEWED_DOMAIN}".pem
