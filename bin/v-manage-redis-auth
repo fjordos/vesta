@@ -305,7 +305,15 @@ case "$1" in
         toggle_redis_user "$2" on
         ;;
     *)
-        echo "Error: Invalid action. Use one of: create, delete, list, password, suspend, unsuspend"
+        echo "Usage: $0 {create|delete|list|password|suspend|unsuspend|permissions|info|test}"
+        echo ""
+        echo "Commands:"
+        echo "  create <username> <password> [permissions] [key_pattern]"
+        echo "  delete <username>"
+        echo "  list"
+        echo "  password <username> <new_password>"
+        echo "  suspend <username>"
+        echo "  unsuspend <username>"
         exit 1
         ;;
 esac
