@@ -282,9 +282,9 @@ get_redis_user_info() {
 }
 
 
-########
-# Ation #
-########
+##########
+# Action #
+##########
 case "$1" in
     "create")
         create_redis_user "$2" "$3" "$4" "$5"
@@ -304,7 +304,7 @@ case "$1" in
     "unsuspend")
         toggle_redis_user "$2" on
         ;;
-    "*")
+    *)
         echo "Error: Invalid action. Use one of: create, delete, list, password, suspend, unsuspend"
         exit 1
         ;;
