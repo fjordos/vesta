@@ -1,9 +1,8 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 DEBUG=""
 . /etc/profile.d/vesta.sh
 . "$VESTA/conf/vesta.conf"
-#. "$VESTA/func/main.sh"
 
 [[ -n "${RENEWED_DOMAIN}" ]] || RENEWED_DOMAIN="${RENEWED_DOMAINS%% *}"
 [[ -n "${RENEWED_DOMAIN}" ]] || (echo "Undefined RENEWED_DOMAINS"; env ; exit 1)
@@ -23,7 +22,7 @@ mkdir -p "${VESTA_SSL}"
 for I in key crt ca pem ; do
   /bin/cp -f "${DEBUG:+-v}" "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
 done
-env
+[[ "$DEBUG" ]] && env
 if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${USER_DATA}"/web.conf) ; then
   /bin/sed "${DEBUG:+--debug}" -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
     -i "${USER_DATA}"/web.conf

@@ -69,12 +69,12 @@ else
 fi
 
 if certbot certificates --cert-name "$domain" | grep "Domains:" ; then
-   certbot --expand --non-interactive "${proto}" -d "${domain}${aliases:+,}${aliases}" \
+   certbot --expand --non-interactive "${proto}" -d "${domain}${aliases:+,}${aliases}" --installer null \
    --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
 else
   email=$(get_user_value '$CONTACT')
   /usr/bin/certbot run --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
-    "${proto:=--nginx}" -d "${domain}${aliases:+,}${aliases}" \
+    "${proto:=--nginx}" -d "${domain}${aliases:+,}${aliases}" --installer null \
     --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
 fi
 
