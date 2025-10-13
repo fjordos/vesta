@@ -78,28 +78,6 @@ else
     --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
 fi
 
-# Adding SSL
-ssl_home=$(search_objects 'web' 'LETSENCRYPT' 'yes' 'SSL_HOME')
-$BIN/v-delete-web-domain-ssl $user $domain >/dev/null 2>&1
-echo "[$(date)] : v-add-web-domain-ssl $user $domain $VESTA/data/users/${user}/ssl $ssl_home" >> /usr/local/vesta/log/letsencrypt.log
-$BIN/v-add-web-domain-ssl $user $domain "$VESTA"/data/users/"${user}"/ssl "$ssl_home"
-exitstatus=$?
-echo "[$(date)] : v-add-web-domain-ssl status: $exitstatus" >> /usr/local/vesta/log/letsencrypt.log
-if [ "$exitstatus" -ne '0' ]; then
-    touch $VESTA/data/queue/letsencrypt.pipe
-    sed -i "/ $domain /d" $VESTA/data/queue/letsencrypt.pipe
-    echo "[$(date)] : EXIT=$domain certificate installation failed" >> /usr/local/vesta/log/letsencrypt.log
-    send_notice 'LETSENCRYPT' "$domain certificate installation failed"
-    check_result $exitstatus "SSL install" >/dev/null
-fi
-
-# Updating letsencrypt key
-if [ -z "$LETSENCRYPT" ]; then
-    add_object_key "web" 'DOMAIN' "$domain" 'LETSENCRYPT' 'FTP_USER'
-fi
-update_object_value 'web' 'DOMAIN' "$domain" '$LETSENCRYPT' 'yes'
-
-reset_web_counter "$user" "$domain" 'LETSENCRYPT_FAIL_COUNT'
 
 #----------------------------------------------------------#
 #                       Vesta                              #
