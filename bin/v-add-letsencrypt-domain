@@ -59,23 +59,27 @@ fi;
 # Checking wildcard alias
 if [ "$aliases" = "*.$domain" ]; then
     echo "[$(date)] : Checking wildcard alias" >> /usr/local/vesta/log/letsencrypt.log
-    proto="--dns-rfc2136"
+    #proto="--dns-rfc2136"
     if [ ! -e "$VESTA/data/users/$user/dns/$domain.conf" ]; then
         echo "[$(date)] : EXIT=DNS domain $domain doesn't exist" >> /usr/local/vesta/log/letsencrypt.log
         check_result $E_NOTEXIST "DNS domain $domain doesn't exist"
     fi
+    send_notice 'LETSENCRYPT' "Wildcard alias detected: it's not supported yet."
+    exit 1
 else
-    proto="--nginx"
-fi
-
-if certbot certificates --cert-name "$domain" | grep "Domains:" ; then
-   certbot --expand --non-interactive "${proto}" -d "${domain}${aliases:+,}${aliases}" --installer null \
-   --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
-else
-  email=$(get_user_value '$CONTACT')
-  /usr/bin/certbot run --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
-    "${proto:=--nginx}" -d "${domain}${aliases:+,}${aliases}" --installer null \
-    --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
+    if certbot certificates --cert-name "$domain" | grep "Domains:" ; then
+       certbot certonly --expand --non-interactive -d "${domain}${aliases:+,}${aliases}" --manual \
+       --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh \
+       --preferred-challenges=http --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/validation.sh \
+       --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/validation.sh
+    else
+      email=$(get_user_value '$CONTACT')
+      /usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
+         -d "${domain}${aliases:+,}${aliases}" --manual \
+        --preferred-challenges=http --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/validation.sh \
+        --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/validation.sh \
+        --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
+    fi
 fi
 
 
