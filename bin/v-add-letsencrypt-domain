@@ -68,17 +68,19 @@ if [ "$aliases" = "*.$domain" ]; then
     exit 1
 else
     if certbot certificates --cert-name "$domain" | grep "Domains:" ; then
-       certbot certonly --expand --non-interactive -d "${domain}${aliases:+,}${aliases}" --manual \
-       --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh \
-       --preferred-challenges=http --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/validation.sh \
-       --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/validation.sh
+       certbot certonly --expand --non-interactive -d "${domain}${aliases:+,}${aliases}" \
+         --manual --preferred-challenges=http \
+         --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/authenticator.sh \
+         --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/cleanup.sh \
+         --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
     else
-      email=$(get_user_value '$CONTACT')
-      /usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
-         -d "${domain}${aliases:+,}${aliases}" --manual \
-        --preferred-challenges=http --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/validation.sh \
-        --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/validation.sh \
-        --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
+       email=$(get_user_value '$CONTACT')
+       /usr/bin/certbot certonly --non-interactive --no-eff-email --agree-tos --email "${email:-admin@$domain}" \
+         -d "${domain}${aliases:+,}${aliases}" \
+         --manual --preferred-challenges=http \
+         --manual-auth-hook /etc/letsencrypt/renewal-hooks/pre/authenticator.sh \
+         --manual-cleanup-hook /etc/letsencrypt/renewal-hooks/post/cleanup.sh \
+         --deploy-hook /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
     fi
 fi
 
