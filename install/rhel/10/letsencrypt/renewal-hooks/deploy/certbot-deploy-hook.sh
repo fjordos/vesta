@@ -2,6 +2,7 @@
 #
 DEBUG=""
 . /etc/profile.d/vesta.sh
+. "$VESTA/func/main.sh"
 
 [[ -n "${RENEWED_DOMAIN}" ]] || RENEWED_DOMAIN="${RENEWED_DOMAINS%% *}"
 [[ -n "${RENEWED_DOMAIN}" ]] || (echo "Undefined RENEWED_DOMAINS"; env ; exit 1)
@@ -9,7 +10,8 @@ DEBUG=""
 [[ -d "${RENEWED_LINEAGE}" ]] || (echo "The RENEWED_LINEAGE is not a valid directory"; env ; exit 1)
 RENEWED_USER="$(/bin/grep "DOMAIN='${RENEWED_DOMAIN}'" "${VESTA}"/data/users/*/web.conf | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
 
-VESTA_SSL="${VESTA}/data/users/${RENEWED_USER}/ssl"
+USER_DATA="${VESTA}/data/users/${RENEWED_USER}"
+VESTA_SSL="${USER_DATA}/ssl"
 mkdir -p "${VESTA_SSL}"
 /bin/cat "${RENEWED_LINEAGE}"/privkey.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".key
 /bin/cat "${RENEWED_LINEAGE}"/cert.pem > "${VESTA_SSL}"/"${RENEWED_DOMAIN}".crt
@@ -20,12 +22,15 @@ mkdir -p "${VESTA_SSL}"
 for I in key crt ca pem ; do
   /bin/cp -f "${DEBUG:+-v}" "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
 done
-env
-if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
-  /bin/sed "${DEBUG:+--debug}" -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
-    -i "${VESTA}"/data/users/"${RENEWED_USER}"/web.conf
-  [[ "$DEBUG" ]] && /bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf"
-fi
+#env
+#if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf") ; then
+#  /bin/sed "${DEBUG:+--debug}" -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
+#    -i "${VESTA}"/data/users/"${RENEWED_USER}"/web.conf
+#  [[ "$DEBUG" ]] && /bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${VESTA}/data/users/${RENEWED_USER}/web.conf"
+#fi
+update_object_value 'web' 'DOMAIN' "${RENEWED_DOMAIN}" '$SSL_HOME' "same"
+update_object_value 'web' 'DOMAIN' "${RENEWED_DOMAIN}" '$SSL' "yes"
+update_object_value 'web' 'DOMAIN' "${RENEWED_DOMAIN}" '$LETSENCRYPT' "yes"
 "${VESTA}"/bin/v-rebuild-web-domains "${RENEWED_USER}"
 
 . "$VESTA"/conf/vesta.conf
