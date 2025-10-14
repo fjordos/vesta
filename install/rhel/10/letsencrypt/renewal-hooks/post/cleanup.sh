@@ -5,6 +5,7 @@ DEBUG=""
 ${DEBUG:+set -x}
 ${DEBUG:+env}
 
-RENEWED_USER="$(/bin/grep "DOMAIN='${CERTBOT_DOMAIN}'" "${VESTA}/data/users/*/web.conf" | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
+RENEWED_USER="$(/bin/grep -E "(DOMAIN='|ALIAS='|,)${RENEWED_DOMAIN}[,']" "${VESTA}/data/users/*/web.conf" | awk -F / '{print $7}')" || (echo "User not found for $RENEWED_DOMAIN"; env ; exit 1)
+CERTBOT_DOMAIN_BASE=$(/bin/grep -E "(DOMAIN='|ALIAS='|,)${RENEWED_DOMAIN}[,']" "${VESTA}/data/users/${RENEWED_USER}/web.conf" | awk -F "'" '{print $2}')
 
-rm -f ${DEBUG:+-v} "/home/${RENEWED_USER}/conf/web//home/itdal/conf/web/nginx.${CERTBOT_DOMAIN}.conf_letsencrypt*"
+rm -f ${DEBUG:+-v} "/home/${RENEWED_USER}/conf/web/nginx.${CERTBOT_DOMAIN_BASE}.conf_letsencrypt_*"
