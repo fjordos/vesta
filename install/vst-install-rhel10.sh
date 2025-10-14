@@ -1120,10 +1120,12 @@ if [ -e "/usr/bin/redis-cli" ]; then
     cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
     
     # Configure Redis with AUTH
-    sed -i "s/^# requirepass foobared/requirepass $redis_auth_pass/" /etc/redis/redis.conf
+    sed -i "s/^# requirepass .*/requirepass $redis_auth_pass/" /etc/redis/redis.conf
     sed -i 's/^bind 127.0.0.1/bind 127.0.0.1/' /etc/redis/redis.conf
-    sed -i 's/^# maxmemory <bytes>/maxmemory 256mb/' /etc/redis/redis.conf
-    sed -i 's/^# maxmemory-policy noeviction/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory .*/maxmemory 256mb/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
+    sed -i 's/^# aclfile .*/aclfile \/etc\/redis\/users.acl/' /etc/redis/redis.conf
+    touch /etc/redis/users.acl
     
     # Additional security settings
     echo "protected-mode yes" >> /etc/redis/redis.conf
