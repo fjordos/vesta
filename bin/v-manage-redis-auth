@@ -43,7 +43,7 @@ test_redis_auth() {
 create_redis_user() {
     local username="$1"
     local password="$2"
-    local permissions="${3:-+@all -@dangerous}"
+    local permissions="${3:-+@all -@admin}"
     local key_pattern="${4:-${username}:*}"
 
     if [ -z "$username" ] || [ -z "$password" ]; then
@@ -59,6 +59,8 @@ create_redis_user() {
     # Create user with ACL
     redis-cli ACL SETUSER "$username" on ">${password}" ~"$key_pattern" $permissions >/dev/null 2>&1
     check_result $? "Failed to create Redis user: $username"
+    redis-cli ACL SAVE >/dev/null 2>&1
+    check_result $? "Failed to save Redis user: $username"
 
     # Store user metadata
     redis-cli HMSET "vesta:redis:users:$username" \
@@ -95,6 +97,8 @@ delete_redis_user() {
     # Delete ACL user
     redis-cli ACL DELUSER "$username" >/dev/null 2>&1
     check_result $? "Failed to delete Redis user: $username"
+    redis-cli ACL SAVE >/dev/null 2>&1
+    check_result $? "Failed to save Redis user: $username"
 
     # Remove user metadata
     redis-cli DEL "vesta:redis:users:$username" >/dev/null 2>&1
