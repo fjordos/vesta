@@ -43,8 +43,7 @@ test_redis_auth() {
 create_redis_user() {
     local username="$1"
     local password="$2"
-    local permissions="${3:-+@all -@admin}"
-    local key_pattern="${4:-${username}:*}"
+    local permissions="${3:-+@all -@admin &${username}:* ~${username}:*}"
 
     if [ -z "$username" ] || [ -z "$password" ]; then
         echo "Error: Username and password required"
@@ -57,7 +56,7 @@ create_redis_user() {
     fi
 
     # Create user with ACL
-    redis-cli ACL SETUSER "$username" on ">${password}" ~"$key_pattern" $permissions >/dev/null 2>&1
+    redis-cli ACL SETUSER "$username" on ">${password}" $permissions >/dev/null 2>&1
     check_result $? "Failed to create Redis user: $username"
     redis-cli ACL SAVE >/dev/null 2>&1
     check_result $? "Failed to save Redis user: $username"
@@ -66,13 +65,11 @@ create_redis_user() {
     redis-cli HMSET "vesta:redis:users:$username" \
         "created" "$(date +%s)" \
         "permissions" "$permissions" \
-        "key_pattern" "$key_pattern" \
         "status" "active" \
         "created_by" "${USER:-root}" >/dev/null 2>&1
 
     echo "Redis user created successfully: $username"
     echo "Permissions: $permissions"
-    echo "Key pattern: $key_pattern"
 }
 
 # Delete Redis user
@@ -312,7 +309,7 @@ case "$1" in
         echo "Usage: $0 {create|delete|list|password|suspend|unsuspend|permissions|info|test}"
         echo ""
         echo "Commands:"
-        echo "  create <username> <password> [permissions] [key_pattern]"
+        echo "  create <username> <password> [permissions]"
         echo "  delete <username>"
         echo "  list"
         echo "  password <username> <new_password>"

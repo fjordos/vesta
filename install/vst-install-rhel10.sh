@@ -1120,7 +1120,6 @@ if [ -e "/usr/bin/redis-cli" ]; then
     cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
     
     # Configure Redis with AUTH
-    sed -i "s/^# requirepass .*/requirepass $redis_auth_pass/" /etc/redis/redis.conf
     sed -i 's/^bind 127.0.0.1/bind 127.0.0.1/' /etc/redis/redis.conf
     sed -i 's/^# maxmemory .*/maxmemory 256mb/' /etc/redis/redis.conf
     sed -i 's/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
@@ -1135,7 +1134,9 @@ if [ -e "/usr/bin/redis-cli" ]; then
     systemctl enable --now redis
     check_result $? "redis start failed"
     
-    # Store Redis AUTH password securely in Vesta config
+    # Create redis default user's password
+    redis-cli ACL SETUSER default on ">${redis_auth_pass}" "~*" "&*" "+@all"
+    redis ACL SAVE
     echo "REDIS_AUTH_PASSWORD='$redis_auth_pass'" >> $VESTA/conf/vesta.conf
     chmod 600 $VESTA/conf/vesta.conf
     
