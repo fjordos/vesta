@@ -17,7 +17,15 @@ location "/.well-known/acme-challenge/$CERTBOT_TOKEN" {
 }
 EOF
   done
-  nginx -t && nginx -s reload
+  nginx -t && nginx -s reload || { echo "Failed to reload Nginx" ; exit 1; }
+  sleep "${S:=1}"s
+  while curl --fail --silent --show-error --max-time 5 "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" ; do
+    if ((S>5)) ; then
+      echo "Failed to obtain certificate for ${CERTBOT_DOMAIN_BASE}"
+      exit 1
+    fi
+    sleep "${S:=$((S+1))}"s
+  done
 else
   echo "CERTBOT_DOMAIN not set, skipping..."
 fi
