@@ -20,7 +20,8 @@ EOF
   nginx -t  || { echo "Failed to reload Nginx" ; exit 1; }
   nginx -s reload
   sleep "${S:=1}"s
-  while curl --fail --silent --show-error --max-time 5 "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" ; do
+  #while curl --fail --silent --show-error --max-time 5 "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" ; do
+  while curl --fail --silent --show-error --max-time 5 --write-out '%{http_code}' --output /dev/null "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" | grep -q '^200$' ; do
     if ((S>5)) ; then
       echo "Failed to obtain certificate for ${CERTBOT_DOMAIN_BASE}"
       exit 1
