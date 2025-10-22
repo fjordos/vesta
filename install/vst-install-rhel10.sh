@@ -30,7 +30,7 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
     spamassassin sqlite sudo tar telnet unbound unzip
-    vim vsftpd which zip composer"
+    vim vsftpd which zip composer perl-Archive-Zip perl-IO-String"
 # TODO: softaculous
 
 # Defining help function
