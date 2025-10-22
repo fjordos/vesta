@@ -11,7 +11,7 @@ chmod 0700  "$home_dir/$user/web/$domain/tmp"
 chown "$user":"$user" "$home_dir/$user/web/$domain/tmp"
 
 phpv=80
-if ls /etc/opt/remi/php*/php-fpm.d/"${user}-${domain}.conf" ; then
+if ls /etc/opt/remi/php*/php-fpm.d/"${user}-${domain}.conf" 2>&1 >/dev/null ; then
   oldphpvs="$(ls /etc/opt/remi/php*/php-fpm.d/"${user}-${domain}.conf" | awk -F'/' '{print $5}')"
   for oldphpv in $oldphpvs ; do
     if [[ "$oldphpv" != "$phpv" ]] ; then
