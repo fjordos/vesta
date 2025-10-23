@@ -20,7 +20,7 @@ mkdir -p "${VESTA_SSL}"
 [[ "$DEBUG" ]] && ls -l "${VESTA_SSL}"
 
 for I in key crt ca pem ; do
-  /bin/cp -f "${DEBUG:+-v}" "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
+  /bin/cp -f ${DEBUG:+-v} "${VESTA_SSL}"/"${RENEWED_DOMAIN}"."${I}" /home/"${RENEWED_USER}"/conf/web/ssl."${RENEWED_DOMAIN}"."${I}"
 done
 [[ "$DEBUG" ]] && env
 if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${USER_DATA}"/web.conf) ; then
