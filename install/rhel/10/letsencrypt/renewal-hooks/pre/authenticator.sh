@@ -19,14 +19,16 @@ EOF
   done
   nginx -t  || { echo "Failed to reload Nginx" ; exit 1; }
   nginx -s reload
-  until curl --fail --silent --show-error --max-time 5 --write-out '%{http_code}' --output /dev/null "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" | grep -q '^200$' ; do
-    if ((S>5)) ; then
-      echo "Failed to obtain certificate for ${CERTBOT_DOMAIN_BASE}"
-      exit 1
-    fi
-    sleep "${S:=1}"s
-    S=$((S+1))
-  done
+  if [[ "$DEBUG" ]] ; then
+    until curl --fail --silent --show-error --max-time 5 --write-out '%{http_code}' --output /dev/null "http://${CERTBOT_DOMAIN_BASE}/.well-known/acme-challenge/${CERTBOT_TOKEN}" | grep -q '^200$' ; do
+      if ((S>5)) ; then
+        echo "Failed to obtain certificate for ${CERTBOT_DOMAIN_BASE}"
+        exit 1
+      fi
+      sleep "${S:=1}"s
+      S=$((S+1))
+    done
+  fi
 else
   echo "CERTBOT_DOMAIN not set, skipping..."
 fi
