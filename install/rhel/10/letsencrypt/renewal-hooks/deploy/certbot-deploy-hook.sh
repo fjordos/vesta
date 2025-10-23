@@ -24,7 +24,7 @@ for I in key crt ca pem ; do
 done
 [[ "$DEBUG" ]] && env
 if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${USER_DATA}"/web.conf) ; then
-  /bin/sed "${DEBUG:+--debug}" -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
+  /bin/sed ${DEBUG:+--debug} -E "s/^(DOMAIN='${RENEWED_DOMAIN}' .*) SSL='(yes|no)' SSL_HOME='.*' LETSENCRYPT='(yes|no)' /\1 SSL='yes' SSL_HOME='same' LETSENCRYPT='yes' /" \
     -i "${USER_DATA}"/web.conf
   [[ "$DEBUG" ]] && /bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${USER_DATA}"/web.conf
 fi
