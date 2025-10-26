@@ -6,8 +6,14 @@ if [[ -n "${VESTA}" ]] ; then
 fi
 DEBUG=0
 
+# Sync Let's Encrypt files'
 /bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/rhel/10/letsencrypt/" "/etc/letsencrypt"
 
+# Sync systemd system files and reload if changes were made
+if /bin/rsync ${DEBUG:+-v} -aH --itemize-changes "${VESTA}/install/rhel/10/systemd/system/" "/etc/systemd/system" | grep -q '^[<>ch]'; then
+  # Reload systemd daemon
+  systemctl daemon-reload
+fi
 # Sync systemd user files and reload if changes were made
 if /bin/rsync ${DEBUG:+-v} -aH --itemize-changes "${VESTA}/install/rhel/10/systemd/user/" "/etc/systemd/user" | grep -q '^[<>ch]'; then
   # Reload systemd daemon for users with linger enabled
@@ -15,3 +21,5 @@ if /bin/rsync ${DEBUG:+-v} -aH --itemize-changes "${VESTA}/install/rhel/10/syste
      systemctl --user -M "${username}@.host" daemon-reload
   done
 fi
+
+# TODO: Sync Vesta config system files and reload if changes were made
