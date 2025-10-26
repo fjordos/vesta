@@ -11,17 +11,17 @@ chmod 0700  "$home_dir/$user/web/$domain/tmp"
 chown "$user":"$user" "$home_dir/$user/web/$domain/tmp"
 
 phpv=85
-if ls /etc/opt/remi/php*/php-fpm.d/"${user}-${domain}.conf" 2>&1 >/dev/null ; then
-  oldphpvs="$(ls /etc/opt/remi/php*/php-fpm.d/"${user}-${domain}.conf" | awk -F'/' '{print $5}')"
+if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
+  oldphpvs="$(ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" | awk -F'/' '{print $5}')"
   for oldphpv in $oldphpvs ; do
     if [[ "$oldphpv" != "$phpv" ]] ; then
-      rm -f "/etc/opt/remi/${oldphpv}/php-fpm.d/${user}-${domain}.conf"
+      rm -f "/etc/opt/remi/${oldphpv}/php-fpm.d/${user}@${domain}.conf"
       sudo systemctl reload "${oldphpv}-php-fpm" || sudo systemctl start "${oldphpv}-php-fpm"
     fi
   done
 fi
-cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}-${domain}.conf" << EOF
-[${user}-${domain}]
+cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf" << EOF
+[${user}@${domain}]
 user = $user
 group = $user
 listen.owner = $user
