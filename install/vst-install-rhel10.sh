@@ -1044,6 +1044,9 @@ if [ "$mysql" = 'yes' ]; then
     fi
 
     cp -f $vestacp/$service/$mycnf /etc/my.cnf
+    echo "kernel.io_uring_disabled=1" >> /etc/sysctl.d/vesta.conf
+    echo "kernel.io_uring_group=$(grep mysql /etc/passwd | awk -F : '{print $4}')" >> /etc/sysctl.d/vesta.conf
+    sysctl --system
     systemctl enable --now $service
     if [ "$?" -ne 0 ]; then
         if [ -e "/proc/user_beancounters" ]; then
@@ -1078,6 +1081,7 @@ if [ "$mysql" = 'yes' ]; then
     sed -i "s/%phpmyadmin_pass%/$p/g" /etc/phpMyAdmin/config.inc.php
     chmod 777 /var/lib/phpMyAdmin/temp
     chmod 777 /var/lib/phpMyAdmin/save
+    gpasswd -a admin apache
 fi
 
 
