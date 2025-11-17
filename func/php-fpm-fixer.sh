@@ -12,6 +12,7 @@ if [ "$PHPV" = "system" ] ; then
 else
   if [[ -x "/opt/remi/${PHPV}/root/sbin/php-fpm" ]] ; then
     PHPPOOL="$(/opt/remi/"${PHPV}"/root/sbin/php-fpm --test 2>&1 | grep ' ERROR: \[pool' | awk '{print $5}' | tr -d ']')"
+    PHPPOOL="$PHPPOOL $(journalctl --since "$(date --date="-1 minute" +%H:%m)" | grep php | grep "ERROR: unable to bind" | awk -F "'" '{print $2}' | sort -u)"
   else
     echo "No PHP-FPM version specified or not found."
   fi
