@@ -16,7 +16,7 @@ if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; th
   for oldphpv in $oldphpvs ; do
     if [[ "$oldphpv" != "$phpv" ]] ; then
       rm -f "/etc/opt/remi/${oldphpv}/php-fpm.d/${user}@${domain}.conf"
-      sudo systemctl reload "${oldphpv}-php-fpm" || sudo systemctl start "${oldphpv}-php-fpm"
+      systemctl try-reload-or-restart "${oldphpv}-php-fpm" ||:
     fi
   done
 fi
@@ -47,6 +47,6 @@ php_value[post_max_size] = 64M
 php_value[upload_max_filesize] = 64M
 EOF
 
-sudo systemctl reload "php${phpv}-php-fpm" || sudo systemctl start "php${phpv}-php-fpm"
+systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 
 exit 0

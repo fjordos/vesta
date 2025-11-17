@@ -26,9 +26,9 @@ if [[ -n "$PHPPOOL" ]] ; then
     PHPDOMAIN="${B#*@}"
     echo "PHPDOMAIN=\"$PHPDOMAIN\""
     rm -fv "/etc/opt/remi/${PHPV}/php-fpm.d/${B}.conf" || true
-    if grep -qE "^${PHPUSER}:" /etc/passwd ; then
-      "$VESTA"/bin/v-rebuild-web-domains "$PHPUSER" no
-    fi
   done
+  if grep -qE "^${PHPUSER}:" /etc/passwd ; then
+    "$VESTA"/bin/v-rebuild-web-domains "$PHPUSER" no
+  fi
 fi
 exit 0

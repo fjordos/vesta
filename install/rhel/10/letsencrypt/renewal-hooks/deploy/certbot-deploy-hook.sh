@@ -28,6 +28,7 @@ if ! (/bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LET
     -i "${USER_DATA}"/web.conf
   [[ "$DEBUG" ]] && /bin/grep -E "^DOMAIN='${RENEWED_DOMAIN}' .* SSL='yes' SSL_HOME='same' LETSENCRYPT='yes'" "${USER_DATA}"/web.conf
 fi
+/bin/rm -f /home/"${RENEWED_USER}"/conf/web/{s,}nginx."${RENEWED_DOMAIN}".conf_letsencrypt_* ||:
 "${VESTA}"/bin/v-rebuild-web-domains "${RENEWED_USER}"
 
 if [[ "$VESTA_CERTIFICATE" == "$RENEWED_USER:$RENEWED_DOMAIN" ]] ; then
