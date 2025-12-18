@@ -116,7 +116,7 @@
     </div>
 
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@<?php=JQUERY_VERSION?>/dist/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.2/fotorama.js"></script>
         <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
         <script src="/js/jquery.finder.js"></script>
