@@ -22,4 +22,15 @@ if /bin/rsync ${DEBUG:+-v} -aH --itemize-changes "${VESTA}/install/rhel/10/syste
   done
 fi
 
+# Temporary Clamav Freshclam fix:
+chown -R clam:clam /var/lib/clamav
+
+# Set certificate for Cockpit
+if [ ! -e "/etc/cockpit/ws-certs.d/000-default.cert" ] || [ ! -e "/etc/cockpit/ws-certs.d/000-default.key" ] ; then
+  rm -f "/etc/cockpit/ws-certs.d/000-default.cert" "/etc/cockpit/ws-certs.d/000-default.key" ||:
+  ln -sf "${VESTA}/ssl/certificate.crt" "/etc/cockpit/ws-certs.d/000-default.cert"
+  ln -sf "${VESTA}/ssl/certificate.key" "/etc/cockpit/ws-certs.d/000-default.key"
+  systemctl restart cockpit.socket
+fi
+
 # TODO: Sync Vesta config system files and reload if changes were made
