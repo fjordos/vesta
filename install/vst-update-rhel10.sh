@@ -6,6 +6,8 @@ if [[ -n "${VESTA}" ]] ; then
 fi
 DEBUG=0
 
+/bin/cp -f ${DEBUG:+-v} "${VESTA}/install/rhel/10/sysctl/vesta.conf" "/etc/sysctl.d/vesta.conf"
+
 # Sync Let's Encrypt files'
 /bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/rhel/10/letsencrypt/" "/etc/letsencrypt"
 
