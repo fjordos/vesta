@@ -16,7 +16,7 @@
         Options +Includes -Indexes -ExecCGI
     </Directory>
 
-    ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php.socket|fcgi://localhost/%sdocroot%/
+    ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php.socket|fcgi://localhost/%sdocroot%/ enablereuse=on
 
     SSLEngine on
     SSLVerifyClient none
