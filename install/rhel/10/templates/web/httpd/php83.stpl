@@ -15,6 +15,9 @@
         SSLRequireSSL
         Options +Includes -Indexes -ExecCGI
     </Directory>
+    <Directory %home%/%user%/web/%domain%/stats>
+        AllowOverride All
+    </Directory>
 
     ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php.socket|fcgi://localhost/%sdocroot%/ enablereuse=on
 
