@@ -35,7 +35,7 @@ OLDIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 # Defining directory list
-dir_list=$(ls $HOMEDIR/$user/ |grep -v '^web$' | grep -v '^mail$' |\
+dir_list=$(ls -a $HOMEDIR/$user/ | grep -Ev "^\.{1,2}$" |grep -v '^web$' | grep -v '^mail$' |\
     grep -v '^conf$')
 
 # Starting update disk loop
