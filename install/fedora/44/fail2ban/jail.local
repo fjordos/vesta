@@ -1,0 +1,30 @@
+[DEFAULT]
+bantime = 1h
+maxretry = 3
+
+[ssh]
+enabled  = true
+
+[exim-spam]
+enabled = true
+
+[exim]
+enabled = true
+
+[dovecot]
+enabled = true
+logpath = /var/log/dovecot.log
+
+[vsftpd]
+enabled  = false
+
+[proftpd]
+enabled  = false
+
+[mysqld-auth]
+enabled  = false
+
+[vesta]
+enabled = true
+filter  = vesta
+logpath = /var/log/vesta/auth.log

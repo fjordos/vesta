@@ -1,0 +1,10 @@
+/var/log/httpd/*log /var/log/httpd/domains/*log /home/*/web/*/logs/*.log {
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+        /bin/systemctl is-active httpd ||/bin/systemctl reload httpd || true
+        /bin/systemctl is-active nginx || /bin/systemctl reload nginx || true
+    endscript
+}

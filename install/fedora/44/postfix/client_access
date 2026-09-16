@@ -1,0 +1,9 @@
+
+# Client access control (converted from whitelist/spammers)
+
+# Add your whitelist IPs here
+# 192.168.1.0/24    OK
+# 10.0.0.0/8        OK
+
+# Add blacklisted IPs here
+# 192.168.100.1     REJECT Blacklisted IP

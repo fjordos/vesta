@@ -1,0 +1,6 @@
+[Unit]
+Description=Vesta update task
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/vesta/bin/v-update-sys-vesta

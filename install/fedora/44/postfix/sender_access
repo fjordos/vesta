@@ -1,0 +1,6 @@
+
+# Sender access control
+
+# Add sender restrictions here
+# spammer@example.com    REJECT
+# @baddomain.com         REJECT

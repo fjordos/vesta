@@ -1,0 +1,12 @@
+/var/log/nginx/*log /var/log/nginx/domains/*log {
+    create 0644 nginx nginx
+    daily
+    rotate 10
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+        /bin/systemctl is-active nginx || /bin/systemctl reload nginx || true
+    endscript
+}
