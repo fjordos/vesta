@@ -44,7 +44,7 @@ case $(head -n1 /etc/issue | cut -f 1 -d ' ') in
     Ubuntu)     type="ubuntu" ;;
     Amazon)     type="amazon" ;;
     *)          source /etc/os-release
-                if [ ID == "fedora" ] ; then
+                if [ "$ID" == "fedora" ] ; then
                     type="fedora"
                 else
                     if [ "${VERSION_ID%%.*}" == '9' ] || [ "${VERSION_ID%%.*}" == '10' ] ; then

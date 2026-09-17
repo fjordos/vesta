@@ -29,8 +29,9 @@ software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
     mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
     $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
     postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
-    spamassassin sqlite sudo tar telnet unbound unzip
+    spamassassin sqlite sudo tar telnet unzip
     vim vsftpd which zip composer perl-Archive-Zip perl-IO-String"
+    #unbound
 # TODO: softaculous
 
 # Defining help function
@@ -451,22 +452,17 @@ fi
 #                   Install repository                     #
 #----------------------------------------------------------#
 
-# Enable mandatory repos
-if [ ! -z "$(grep ^NAME=\"Red /etc/os-release)" ]; then
-    subscription-manager repos --enable rhel-${release}-for-x86_64-baseos-rpms
-    subscription-manager repos --enable rhel-${release}-for-x86_64-appstream-rpms
-fi
-
 # Updating system
 dnf -y update
 check_result $? 'dnf update failed'
 
-# Installing RPM Fusion repository
-dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${release}.noarch.rpm"
-check_result $? "Can't install RPM Fusion repository"
+
 
 # Installing Remi repository
 if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
+    # Installing RPM Fusion repository
+    dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${release}.noarch.rpm"
+    check_result $? "Can't install RPM Fusion repository"
     dnf install -y "https://rpms.remirepo.net/fedora/remi-release-${release}.rpm"
     check_result $? "Can't install REMI repository"
     dnf config-manager --set-enabled remi
@@ -627,7 +623,7 @@ fi
 # Installing VestaCP
 [[ -d "$VESTA" ]] && exit 1 || mkdir -p "$VESTA"
 git clone https://github.com/fjordos/vesta.git "$VESTA"
-git checkout $vesta_version "$VESTA"
+git checkout "$vesta_version" "$VESTA"
 
 # Installing rpm packages
 dnf install -y $software
@@ -688,7 +684,7 @@ fi
 
 # Installing sudo configuration
 mkdir -p /etc/sudoers.d
-cp -f $vestacp/sudo/admin /etc/sudoers.d/
+cp -f "$vestacp/sudo/admin" /etc/sudoers.d/
 chmod 440 /etc/sudoers.d/admin
 
 # Configuring system env
@@ -878,22 +874,10 @@ if [ "$nginx" = 'yes' ]; then
     cp -f $vestacp/logrotate/nginx /etc/logrotate.d/
     echo > /etc/nginx/conf.d/vesta.conf
     mkdir -p /var/log/nginx/domains
-    if [ "$release" -ge '7' ]; then
-        mkdir -p /etc/systemd/system/nginx.service.d
-        cd /etc/systemd/system/nginx.service.d
-        echo "[Service]" > limits.conf
-        echo "LimitNOFILE=500000" >> limits.conf
-    fi
     firewall-cmd --permanent --add-service=http
     firewall-cmd --permanent --add-service=https
     systemctl enable --now nginx
     check_result $? "nginx start failed"
-
-    # Workaround for OpenVZ/Virtuozzo
-    if [ "$release" -ge '7' ] && [ -e "/proc/vz/veinfo" ]; then
-        echo "#Vesta: workraround for networkmanager" >> /etc/rc.local
-        echo "sleep 3 && service nginx restart" >> /etc/rc.local
-    fi
 fi
 
 
@@ -927,22 +911,10 @@ if [ "$apache" = 'yes'  ]; then
     chmod a+x /var/log/httpd
     mkdir -p /var/log/httpd/domains
     chmod 751 /var/log/httpd/domains
-    if [ "$release" -ge '7' ]; then
-        mkdir -p /etc/systemd/system/httpd.service.d
-        cd /etc/systemd/system/httpd.service.d
-        echo "[Service]" > limits.conf
-        echo "LimitNOFILE=500000" >> limits.conf
-    fi
     firewall-cmd --permanent --add-service=http
     firewall-cmd --permanent --add-service=https
     systemctl enable --now httpd
     check_result $? "httpd start failed"
-
-    # Workaround for OpenVZ/Virtuozzo
-    if [ "$release" -ge '7' ] && [ -e "/proc/vz/veinfo" ]; then
-        echo "#Vesta: workraround for networkmanager" >> /etc/rc.local
-        echo "sleep 2 && service httpd restart" >> /etc/rc.local
-    fi
 fi
 
 
@@ -1012,16 +984,11 @@ if [ "$mysql" = 'yes' ]; then
     mkdir -p /var/lib/mysql
     chown mysql:mysql /var/lib/mysql
     mkdir -p /etc/my.cnf.d
+    service='mariadb'
 
-    if [ $release -lt 7 ]; then
-        service='mysqld'
-    else
-        service='mariadb'
-    fi
-
-    cp -f $vestacp/$service/$mycnf /etc/my.cnf
-    echo "kernel.io_uring_disabled=1" >> /etc/sysctl.d/vesta.conf
-    echo "kernel.io_uring_group=$(grep mysql /etc/passwd | awk -F : '{print $4}')" >> /etc/sysctl.d/vesta.conf
+    cp -f $vestacp/$service/$mycnf /etc/my.cnf.d/vesta.cnf
+    echo "kernel.io_uring_disabled=1" > "/etc/sysctl.d/vesta-$service.conf"
+    echo "kernel.io_uring_group=$(grep mysql /etc/passwd | awk -F : '{print $4}')" >> "/etc/sysctl.d/vesta-$service.conf"
     sysctl --system
     systemctl enable --now $service
     if [ "$?" -ne 0 ]; then
@@ -1143,9 +1110,9 @@ fi
 #                      Configure Unbound                    #
 #----------------------------------------------------------#
 
-cp -f $vestacp/unbound/* /etc/unbound/
-chown -R root:unbound /etc/unbound/conf.d
-systemctl enable --now unbound
+#cp -f $vestacp/unbound/* /etc/unbound/
+#chown -R root:unbound /etc/unbound/conf.d
+#systemctl enable --now unbound
 
 #----------------------------------------------------------#
 #                      Configure Exim                      #
@@ -1412,9 +1379,9 @@ $VESTA/upd/add_notifications.sh
 # Adding cronjob for autoupdates
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
-$VESTA/bin/v-change-vesta-port $port
+$VESTA/bin/v-change-vesta-port "$port"
 
-firewall-cmd --permanent --add-port=$port/tcp
+firewall-cmd --permanent --add-port="$port"/tcp
 
 echo "NOTIFY_ADMIN_FULL_BACKUP='$email'" >> $VESTA/conf/vesta.conf
 
@@ -1425,7 +1392,7 @@ echo "NOTIFY_ADMIN_FULL_BACKUP='$email'" >> $VESTA/conf/vesta.conf
 # Comparing hostname and ip
 
 if [ "$ssl" = 'no' ]; then
-host_ip=$(host $servername |head -n 1 |awk '{print $NF}')
+host_ip=$(host "$servername" |head -n 1 |awk '{print $NF}')
 if [ "$host_ip" = "$ip" ]; then
     ip="$servername"
 fi
@@ -1433,7 +1400,7 @@ fi
 
 if [ "$ssl" = 'yes' ]; then
 make_ssl=0
-host_ip=$(host $servername | head -n 1 | awk '{print $NF}')
+host_ip=$(host "$servername" | head -n 1 | awk '{print $NF}')
 if [ "$host_ip" != "$pub_ip" ]; then
     echo "***** PROBLEM: Hostname $servername is not pointing to your server (IP address $ip)"
     echo "Without pointing your hostname to your IP, LetsEncrypt SSL will not be generated for your server hostname."
@@ -1441,7 +1408,7 @@ if [ "$host_ip" != "$pub_ip" ]; then
     echo "(or register ns1.$servername and ns2.$servername as DNS Nameservers and put those Nameservers on $servername domain)"
     echo "If we detect that hostname is still not pointing to your IP, installer will not add LetsEncrypt SSL certificate to your hosting panel (unsigned SSL will be used instead)."
     read -p "To force to try anyway to add LetsEncrypt, press f and then ENTER." answer
-    host_ip=$(host $servername | head -n 1 | awk '{print $NF}')
+    host_ip=$(host "$servername" | head -n 1 | awk '{print $NF}')
 fi
 if [ "$answer" = "f" ]; then
     make_ssl=1
@@ -1454,7 +1421,7 @@ fi
 if [ $make_ssl -eq 1 ]; then
     # Check if www is also pointing to our IP
     www_host="www.$servername"
-    www_host_ip=$(host $www_host | head -n 1 | awk '{print $NF}')
+    www_host_ip=$(host "$www_host" | head -n 1 | awk '{print $NF}')
     if [ "$www_host_ip" != "$pub_ip" ]; then
         if [ "$named" = 'yes' ]; then
             echo "=== Deleting www to server hostname"
@@ -1497,10 +1464,10 @@ Thank you.
 --
 Sincerely yours
 vestacp.com team
-" > $tmpfile
+" > "$tmpfile"
 
 send_mail="$VESTA/web/inc/mail-wrapper.php"
-cat $tmpfile | $send_mail -s "Vesta Control Panel" $email
+cat "$tmpfile" | $send_mail -s "Vesta Control Panel" "$email"
 
 # Congrats
 echo '======================================================='
@@ -1512,7 +1479,7 @@ echo '   _|  _|    _|              _|      _|      _|    _| '
 echo '     _|      _|_|_|_|  _|_|_|        _|      _|    _| '
 echo
 echo
-cat $tmpfile
-rm -f $tmpfile
+cat "$tmpfile"
+rm -f "$tmpfile"
 
 # EOF
