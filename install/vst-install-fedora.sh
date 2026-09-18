@@ -853,6 +853,9 @@ crudini --set /etc/vesta/vesta.conf DEFAULT VESTA "$VESTA"
 crudini --set /etc/vesta/vesta.conf DEFAULT VESTA_PORT "$port"
 crudini --set /etc/vesta/vesta.conf DEFAULT TIMEZONE "$(timedatectl 2>/dev/null | grep "Time zone: " | awk '{print $3}')"
 crudini --set /etc/vesta/vesta.conf DEFAULT HOSTNAME "$(hostname)"
+crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_SECURITY_DISABLED 0
+crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_FULL 0
+crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_SKIP_UNAVAILABLE 0
 
 #----------------------------------------------------------#
 #                     Configure Letsencrypt                #

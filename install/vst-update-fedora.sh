@@ -7,6 +7,15 @@ fi
 DEBUG=0
 source /etc/os-release
 
+# Default security upgrade
+if ! $UPGRADE_SECURITY_DISABLED ; then
+    /usr/bin/dnf upgrade --assumeyes --skip-unavailable --security
+fi
+
+if $UPGRADE_FULL ; then
+    /usr/bin/dnf upgrade --assumeyes ${UPGRADE_SKIP_UNAVAILABLE:+--skip-unavailable}
+fi
+
 /bin/cp -f ${DEBUG:+-v} "${VESTA}/install/$ID/$VERSION_ID/sysctl/vesta.conf" "/etc/sysctl.d/vesta.conf"
 
 # Sync Let's Encrypt files'
