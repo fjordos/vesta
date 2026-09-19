@@ -718,7 +718,7 @@ chmod 440 /etc/sudoers.d/admin
 # Configuring system env
 cat > /etc/profile.d/vesta.sh << EOF
 export EDITOR=vim
-export VESTA="\$VESTA"
+export VESTA="$VESTA"
 EOF
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh

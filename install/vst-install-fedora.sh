@@ -550,69 +550,47 @@ mv $VESTA/conf/* $vst_backups/vesta > /dev/null 2>&1
 #----------------------------------------------------------#
 
 # Excluding packages
-if [ "$nginx" = 'no'  ]; then
-    software=$(echo "$software" | sed -e "s/ nginx/ /")
+if [ "$nginx" = 'yes'  ]; then
+    software="$software nginx python3-certbot-nginx"
+    # TODO: https://bugzilla.redhat.com/show_bug.cgi?id=2535465
+    software="$software python3-pyparsing"
 fi
-if [ "$apache" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/httpd//")
-    software=$(echo "$software" | sed -e "s/mod_ssl//")
-    software=$(echo "$software" | sed -e "s/mod_fcgid//")
+if [ "$apache" = 'yes' ]; then
+    software="$software httpd mod_ssl mod_fcgid"
 fi
-if [ "$phpfpm" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/php$phpv-php-fpm//")
+if [ "$phpfpm" = 'yes' ]; then
+    software="$software php${phpv}-php-fpm"
 fi
-if [ "$vsftpd" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/vsftpd//")
+if [ "$vsftpd" = 'yes' ]; then
+    software="$software vsftpd"
 fi
-if [ "$proftpd" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/proftpd//")
+if [ "$proftpd" = 'yes' ]; then
+    software="$software proftpd"
 fi
-if [ "$named" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/bind //")
+if [ "$named" = 'yes' ]; then
+    software="$software bind"
 fi
-if [ "$exim" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/exim//")
-    software=$(echo "$software" | sed -e "s/dovecot//")
-    software=$(echo "$software" | sed -e "s/clamd//")
-    software=$(echo "$software" | sed -e "s/clamav-server//")
-    software=$(echo "$software" | sed -e "s/clamav-update//")
-    software=$(echo "$software" | sed -e "s/spamassassin//")
-    software=$(echo "$software" | sed -e "s/dovecot//")
-    software=$(echo "$software" | sed -e "s/roundcubemail//")
+if [ "$exim" = 'yes' ]; then
+    software="$software exim clamd clamav clamav-milter exim-clamav clamav-freshclam spamassassin dovecot roundcubemail"
     software="$software postfix"
 fi
-if [ "$clamd" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/clamd//")
-    software=$(echo "$software" | sed -e "s/clamav-server//")
-    software=$(echo "$software" | sed -e "s/clamav-update//")
+if [ "$clamd" = 'yes' ]; then
+    software="$software clamd clamav clamav-milter exim-clamav clamav-freshclam"
 fi
-if [ "$spamd" = 'no' ]; then
-    software=$(echo "$software" | sed -e 's/spamassassin//')
+if [ "$spamd" = 'yes' ]; then
+    software="$software spamassassin"
 fi
-if [ "$dovecot" = 'no' ]; then
-    software=$(echo "$software" | sed -e "s/dovecot//")
+if [ "$dovecot" = 'yes' ]; then
+    software="$software dovecot"
 fi
-if [ "$mysql" = 'no' ]; then
-    software=$(echo "$software" | sed -e 's/mysql //')
-    software=$(echo "$software" | sed -e 's/mysql-server//')
-    software=$(echo "$software" | sed -e 's/mariadb //')
-    software=$(echo "$software" | sed -e 's/mariadb-server//')
-    software=$(echo "$software" | sed -e 's/php'$phpv'-php-mysqlnd//')
-    software=$(echo "$software" | sed -e 's/phpMyAdmin//')
-    software=$(echo "$software" | sed -e 's/roundcubemail//')
+if [ "$mysql" = 'yes' ]; then
+    software="$software mariadb mariadb-server php${phpv}-php-mysqlnd phpMyAdmin"
 fi
-if [ "$postgresql" = 'no' ]; then
-    software=$(echo "$software" | sed -e 's/postgresql //')
-    software=$(echo "$software" | sed -e 's/postgresql-server//')
-    software=$(echo "$software" | sed -e 's/postgresql-contrib//')
-    software=$(echo "$software" | sed -e 's/php'$phpv'-php-pgsql//')
-    software=$(echo "$software" | sed -e 's/phpPgAdmin//')
+if [ "$postgresql" = 'yes' ]; then
+    software="$software postgresql  postgresql-server php${phpv}-php-pgsql phpPgAdmin"
 fi
-if [ "$softaculous" = 'no' ]; then
-    software=$(echo "$software" | sed -e 's/vesta-softaculous//')
-fi
-if [ "$iptables" = 'no' ] || [ "$fail2ban" = 'no' ]; then
-    software=$(echo "$software" | sed -e 's/fail2ban//')
+if [ "$fail2ban" = 'yes' ]; then
+    software="$software fail2ban"
 fi
 
 
@@ -649,8 +627,7 @@ systemctl restart rsyslog > /dev/null 2>&1
 
 # Disabling SELinux
 if [ -e '/etc/sysconfig/selinux' ]; then
-    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
-    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+    crudini --set /etc/selinux/config DEFAULT SELINUX disable
     setenforce 0 2>/dev/null
 fi
 
@@ -683,14 +660,13 @@ fi
 #----------------------------------------------------------#
 
 # Installing sudo configuration
-mkdir -p /etc/sudoers.d
 cp -f "$vestacp/sudo/admin" /etc/sudoers.d/
 chmod 440 /etc/sudoers.d/admin
 
 # Configuring system env
 cat > /etc/profile.d/vesta.sh << EOF
 export EDITOR=vim
-export VESTA="\$VESTA"
+export VESTA="$VESTA"
 EOF
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
@@ -796,7 +772,7 @@ echo "CRON_SYSTEM='crond'" >> $VESTA/conf/vesta.conf
 if [ "$iptables" = 'yes' ]; then
     echo "FIREWALL_SYSTEM='iptables'" >> $VESTA/conf/vesta.conf
 fi
-if [ "$iptables" = 'yes' ] && [ "$fail2ban" = 'yes' ]; then
+if [ "$fail2ban" = 'yes' ]; then
     echo "FIREWALL_EXTENSION='fail2ban'" >> $VESTA/conf/vesta.conf
 fi
 
