@@ -8,7 +8,7 @@ Vesta is back under active development as of 25 February 2024. We are commited t
 * Vesta is an open source hosting control panel.
 * Vesta has a clean and focused interface without the clutter.
 * Vesta has the latest of very innovative technologies.
-* FjordOS started to support it, and temporary it's supported on CentOS Stream 10 and RHEL 10 by this "fork".
+* FjordOS started to support it, and temporary it's supported on CentOS Stream 10 and RHEL 10, and actual Fedora by this "fork".
 
 How to install (2 step)
 ----------------------------
@@ -19,7 +19,7 @@ ssh root@your.server
 
 Download the installation script, and run it:
 ```bash
-curl https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install-rhel10.sh | bash
+curl https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install.sh | bash
 ```
 
 How to install (3 step)
@@ -32,11 +32,11 @@ ssh root@your.server
 
 Download the installation script:
 ```bash
-curl -O https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install-rhel10.sh
+curl -O https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install.sh
 ```
 Then run it:
 ```bash
-bash vst-install-rhel10.sh
+bash vst-install.sh
 ```
 
 License
