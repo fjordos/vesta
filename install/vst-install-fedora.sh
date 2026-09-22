@@ -10,7 +10,6 @@ export PATH="$PATH:/sbin"
 VERSION='fedora'
 VESTA='/usr/local/vesta'
 memory="$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' | grep [0-9])"
-os="$ID"
 release="${VERSION_ID}"
 vestacp="$VESTA/install/$VERSION/$release"
 phpv="85"
@@ -23,14 +22,10 @@ softwarephp="php$phpv php$phpv-php-bcmath php$phpv-php-cli php$phpv-php-common
     php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-apcu
     php$phpv-php-pecl-imagick
     php$phpv-php-pecl-xmlrpc php$phpv-php-pecl-zip php$phpv-php-ioncube-loader"
-software="nginx bash-completion bc bind bind-libs bind-utils clamav clamd
-    clamav-update crudini curl dovecot e2fsprogs exim expect fail2ban flex freetype ftp
-    GeoIP httpd ImageMagick whois libidn lsof mariadb git certbot python3-certbot-nginx
-    mariadb-server mc mod_fcgid mod_ssl net-tools openssh-clients pcre2 
-    $softwarephp php-cli phpMyAdmin phpPgAdmin postgresql postgresql-contrib
-    postgresql-server proftpd pwgen roundcubemail rrdtool rsyslog screen
-    spamassassin sqlite sudo tar telnet unzip
-    vim vsftpd which zip composer perl-Archive-Zip perl-IO-String"
+software="bash-completion bc bind-utils crudini curl e2fsprogs expect flex freetype ftp
+    GeoIP ImageMagick whois libidn lsof git certbot python3-certbot-nginx
+    mc net-tools openssh-clients pcre2 $softwarephp php-cli pwgen rrdtool rsyslog screen
+    sqlite sudo tar telnet unzip vim which zip composer perl-Archive-Zip perl-IO-String"
     #unbound
 # TODO: softaculous
 
