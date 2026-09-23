@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import QS from 'qs';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 export default function EditDNSRecord(props) {
   const token = localStorage.getItem("token");

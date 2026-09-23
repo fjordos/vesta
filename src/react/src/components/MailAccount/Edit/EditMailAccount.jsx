@@ -16,7 +16,7 @@ import Spinner from '../../Spinner/Spinner';
 import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 export default function EditMailAccount(props) {
   const [autoreplyChecked, setAutoreplyChecked] = useState(false);

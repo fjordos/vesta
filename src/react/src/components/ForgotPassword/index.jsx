@@ -8,7 +8,7 @@ import { Link, useHistory, useLocation } from 'react-router-dom';
 import { reset } from 'src/actions/Session/sessionActions';
 import { useDispatch, useSelector } from 'react-redux';
 import Spinner from 'src/components/Spinner/Spinner';
-import ReactHtmlParser from 'react-html-parser';
+import ReactHtmlParser from 'html-react-parser';
 import { Helmet } from 'react-helmet';
 import QueryString from 'qs';
 

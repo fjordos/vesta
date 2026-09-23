@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import './EditPhp.scss';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const EditPhp = ({ serviceName = '' }) => {
   const token = localStorage.getItem("token");

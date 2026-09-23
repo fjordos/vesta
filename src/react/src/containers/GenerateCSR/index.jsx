@@ -7,7 +7,7 @@ import { generateCSR, getCsrInitialData } from 'src/ControlPanelService/Web';
 import { useDispatch, useSelector } from 'react-redux';
 import Spinner from 'src/components/Spinner/Spinner';
 import { useHistory } from 'react-router-dom';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const GenerateSSL = props => {
   const token = localStorage.getItem("token");

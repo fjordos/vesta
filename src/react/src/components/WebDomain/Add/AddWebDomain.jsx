@@ -17,7 +17,7 @@ import GenerateSSL from 'src/containers/GenerateCSR';
 import 'src/components/Modal/Modal.scss';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const AddWebDomain = props => {
   const { i18n, userName } = useSelector(state => state.session);

@@ -21,7 +21,7 @@ import './EditWeb.scss';
 import TextArea from '../../ControlPanel/AddItemLayout/Form/TextArea/TextArea';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const EditWeb = props => {
   const token = localStorage.getItem("token");

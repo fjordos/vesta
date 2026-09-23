@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import './EditServer.scss';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 import { refreshUserSession } from 'src/actions/Session/sessionActions';
 
 const EditServer = props => {

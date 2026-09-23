@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './AddMailAccount.scss';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 export default function AddMailAccount(props) {
   const { i18n } = useSelector(state => state.session);

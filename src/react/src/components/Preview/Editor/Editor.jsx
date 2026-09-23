@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import CodeMirror from 'react-codemirror';
+import { Controlled as CodeMirror } from 'react-codemirror2';
 import './Editor.scss';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript';
@@ -125,7 +125,7 @@ const Editor = ({ close, name }) => {
         <button type="button" className="btn btn-primary" onClick={save}>{i18n.Save}</button>
         <button type="button" className="btn btn-danger" onClick={close}>{i18n.Close}</button>
       </div>
-      {state.loading ? <Spinner /> : <CodeMirror value={state.code} onChange={updateCode} options={options} autoFocus />}
+      {state.loading ? <Spinner /> : <CodeMirror value={state.code} onBeforeChange={(editor, data, value) => updateCode(value)} options={options} autoFocus />}
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './AddPackage.scss';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const AddPackage = props => {
   const token = localStorage.getItem("token");

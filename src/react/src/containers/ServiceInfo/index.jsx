@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getServiceLogs } from 'src/ControlPanelService/Server';
 import Spinner from 'src/components/Spinner/Spinner';
 import { Helmet } from 'react-helmet';
-import ReactHtmlParser from 'react-html-parser';
+import ReactHtmlParser from 'html-react-parser';
 
 import './styles.scss';
 import QueryString from 'qs';

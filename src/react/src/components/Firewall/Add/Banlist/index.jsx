@@ -8,7 +8,7 @@ import Toolbar from '../../../MainNav/Toolbar/Toolbar';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const AddBanIP = () => {
   const { i18n } = useSelector(state => state.session);

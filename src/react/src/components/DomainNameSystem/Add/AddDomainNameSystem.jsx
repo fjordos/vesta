@@ -14,7 +14,7 @@ import AdvancedOptions from './AdvancedOptions/AdvancedOptions';
 import { addDomainNameSystem } from '../../../ControlPanelService/Dns';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const AddDomainNameSystem = props => {
   const { i18n } = useSelector(state => state.session);

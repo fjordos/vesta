@@ -12,7 +12,7 @@ import Toolbar from '../../MainNav/Toolbar/Toolbar';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 import QS from 'qs';
 import './EditUser.scss';
 

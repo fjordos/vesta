@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './AddInternetProtocol.scss';
 import { Helmet } from 'react-helmet';
 import { refreshCounters } from 'src/actions/MenuCounters/menuCounterActions';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const AddInternetProtocol = props => {
   const token = localStorage.getItem("token");

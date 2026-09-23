@@ -10,7 +10,7 @@ import './WebLogs.scss';
 import { getWebLogs } from 'src/ControlPanelService/WebLogs';
 import Spinner from 'src/components/Spinner/Spinner';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 export default function WebLogs() {
   const { i18n, userName } = useSelector(state => state.session);

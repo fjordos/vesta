@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet';
 
 import './style.scss';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const EditBackupExclusions = () => {
   const token = localStorage.getItem("token");

@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import './Dovecot.scss';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const Dovecot = () => {
   const token = localStorage.getItem("token");

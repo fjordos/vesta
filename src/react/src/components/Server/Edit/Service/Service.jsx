@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import './Service.scss';
 import { Helmet } from 'react-helmet';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const Service = ({ serviceName = '' }) => {
   const token = localStorage.getItem("token");

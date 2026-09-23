@@ -5,7 +5,7 @@ import Bell from './Bell';
 import BellUnread from './BellUnread';
 import { useDispatch, useSelector } from 'react-redux';
 import './Notifications.scss';
-import HtmlParser from 'react-html-parser';
+import HtmlParser from 'html-react-parser';
 
 const Notifications = () => {
   const { i18n } = useSelector(state => state.session);
