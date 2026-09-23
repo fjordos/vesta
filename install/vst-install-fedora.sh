@@ -12,19 +12,18 @@ VESTA='/usr/local/vesta'
 memory="$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' | grep [0-9])"
 release="${VERSION_ID}"
 vestacp="$VESTA/install/$VERSION/$release"
-phpv="85"
+sysphpv="8.5"
 vesta_version=master
 
 # Defining software pack for all distros
-softwarephp="php$phpv php$phpv-php-bcmath php$phpv-php-cli php$phpv-php-common 
-    php$phpv-php-fpm php$phpv-php-gd php$phpv-php-imap php$phpv-php-mbstring 
-    php$phpv-php-mcrypt php$phpv-php-mysqlnd php$phpv-php-pdo php$phpv-php-pgsql 
-    php$phpv-php-soap php$phpv-php-tidy php$phpv-php-xml php$phpv-php-pecl-apcu
-    php$phpv-php-pecl-imagick
-    php$phpv-php-pecl-xmlrpc php$phpv-php-pecl-zip php$phpv-php-ioncube-loader"
+systemphp="php php-php-bcmath php-php-cli php-php-common php-php-fpm
+    php-php-gd php-php-imap php-php-mbstring php-php-mcrypt
+    php-php-mysqlnd php-php-pdo php-php-pgsql php-php-soap
+    php-php-tidy php-php-xml php-php-pecl-apcu php-php-pecl-imagick
+    php-php-pecl-xmlrpc php-php-pecl-zip php-php-ioncube-loader"
 software="bash-completion bc bind-utils crudini curl e2fsprogs expect flex freetype ftp
     GeoIP ImageMagick whois libidn lsof git certbot python3-certbot-nginx
-    mc net-tools openssh-clients pcre2 $softwarephp php-cli pwgen rrdtool rsyslog screen
+    mc net-tools openssh-clients pcre2 php-cli pwgen rrdtool rsyslog screen
     sqlite sudo tar telnet unzip vim which zip composer perl-Archive-Zip perl-IO-String"
     #unbound
 # TODO: softaculous
@@ -461,10 +460,8 @@ if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
     dnf install -y "https://rpms.remirepo.net/fedora/remi-release-${release}.rpm"
     check_result $? "Can't install REMI repository"
     dnf config-manager --set-enabled remi
-    if [[ -z "$phpv" ]] ; then
-        dnf module reset php
-        dnf module enable php:remi-${phpv:0:1}.${phpv:1}
-    fi
+    dnf module reset php
+    dnf module enable php:remi-${sysphpv}
 fi
 
 #----------------------------------------------------------#
@@ -599,7 +596,7 @@ git clone https://github.com/fjordos/vesta.git "$VESTA"
 git checkout "$vesta_version" "$VESTA"
 
 # Installing rpm packages
-dnf install -y $software
+dnf install -y $software $systemphp
 check_result $? "dnf install failed"
 
 
@@ -607,8 +604,8 @@ check_result $? "dnf install failed"
 #                     Configure system                     #
 #----------------------------------------------------------#
 
-# Restarting rsyslog
-systemctl restart rsyslog > /dev/null 2>&1
+# Sure be started rsyslog
+systemctl enable --now rsyslog > /dev/null 2>&1
 
 ## Checking ipv6 on loopback interface
 #check_lo_ipv6=$(/sbin/ip addr | grep 'inet6')
@@ -841,6 +838,7 @@ cp -rf $vestacp/letsencrypt/ /etc/letsencrypt
 
 if [ "$nginx" = 'yes' ]; then
     rm -f /etc/nginx/conf.d/*.conf
+    #TODO
     cp -f $vestacp/nginx/nginx.conf /etc/nginx/
     cp -f $vestacp/nginx/status.conf /etc/nginx/conf.d/
     cp -f $vestacp/nginx/phpmyadmin.inc /etc/nginx/conf.d/
