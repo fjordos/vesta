@@ -727,9 +727,11 @@ cp -f $vestacp/sudo/admin /etc/sudoers.d/
 chmod 440 /etc/sudoers.d/admin
 
 # Configuring system env
-echo "export VESTA='$VESTA'" > /etc/profile.d/vesta.sh
-echo "readonly VESTA"
+cat > /etc/profile.d/vesta.sh << EOF
+export EDITOR=vim
+[[ "\$VESTA" ]] || export VESTA=\'$VESTA\'
 readonly VESTA
+EOF
 chmod 755 /etc/profile.d/vesta.sh
 source /etc/profile.d/vesta.sh
 echo '"PATH=$PATH:'$VESTA'/bin"' >> /root/.bash_profile
