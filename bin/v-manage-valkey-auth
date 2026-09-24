@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Vesta Redis AUTH and User Management Script
+# Vesta Valkey AUTH and User Management Script
 
 #----------------------------------------------------------#
 #                    Variable&Function                     #
@@ -10,23 +10,23 @@
 source $VESTA/func/main.sh
 source $VESTA/conf/vesta.conf
 
-# Get Redis AUTH password from config and set environment variable
-if [ -z "$REDIS_AUTH_PASSWORD" ]; then
-    echo "Error: Redis AUTH password not found in configuration"
+# Get Valkey AUTH password from config and set environment variable
+if [ -z "$VALKEY_AUTH_PASSWORD" ]; then
+    echo "Error: Valkey AUTH password not found in configuration"
     exit 1
 fi
 
-# Set Redis CLI AUTH environment variable to avoid command line warnings
-export REDISCLI_AUTH="$REDIS_AUTH_PASSWORD"
+# Set Valkey CLI AUTH environment variable to avoid command line warnings
+export VALKEYCLI_AUTH="$VALKEY_AUTH_PASSWORD"
 
 
 #----------------------------------------------------------#
 #                    AUTH Functions                        #
 #----------------------------------------------------------#
 
-# Test Redis AUTH connection
-test_redis_auth() {
-    redis-cli ping >/dev/null 2>&1
+# Test Valkey AUTH connection
+test_valkey_auth() {
+    valkey-cli ping >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         return 0
     else
@@ -36,11 +36,11 @@ test_redis_auth() {
 
 
 #----------------------------------------------------------#
-#                 Redis User Management                    #
+#                 Valkey User Management                    #
 #----------------------------------------------------------#
 
-# Create Redis user with ACL (Redis 6.0+)
-create_redis_user() {
+# Create Valkey user with ACL (Valkey 6.0+)
+create_valkey_user() {
     local username="$1"
     local password="$2"
     local permissions="${3:-+@all -@admin &${username}:* ~${username}:*}"
@@ -50,30 +50,30 @@ create_redis_user() {
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
     # Create user with ACL
-    redis-cli ACL SETUSER "$username" on ">${password}" $permissions >/dev/null 2>&1
-    check_result $? "Failed to create Redis user: $username"
-    redis-cli ACL SAVE >/dev/null 2>&1
-    check_result $? "Failed to save Redis user: $username"
+    valkey-cli ACL SETUSER "$username" on ">${password}" $permissions >/dev/null 2>&1
+    check_result $? "Failed to create Valkey user: $username"
+    valkey-cli ACL SAVE >/dev/null 2>&1
+    check_result $? "Failed to save Valkey user: $username"
 
     # Store user metadata
-    redis-cli HMSET "vesta:redis:users:$username" \
+    valkey-cli HMSET "vesta:valkey:users:$username" \
         "created" "$(date +%s)" \
         "permissions" "$permissions" \
         "status" "active" \
         "created_by" "${USER:-root}" >/dev/null 2>&1
 
-    echo "Redis user created successfully: $username"
+    echo "Valkey user created successfully: $username"
     echo "Permissions: $permissions"
 }
 
-# Delete Redis user
-delete_redis_user() {
+# Delete Valkey user
+delete_valkey_user() {
     local username="$1"
 
     if [ -z "$username" ]; then
@@ -82,39 +82,39 @@ delete_redis_user() {
     fi
 
     if [ "$username" = "default" ]; then
-        echo "Error: Cannot delete default Redis user"
+        echo "Error: Cannot delete default Valkey user"
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
     # Delete ACL user
-    redis-cli ACL DELUSER "$username" >/dev/null 2>&1
-    check_result $? "Failed to delete Redis user: $username"
-    redis-cli ACL SAVE >/dev/null 2>&1
-    check_result $? "Failed to save Redis user: $username"
+    valkey-cli ACL DELUSER "$username" >/dev/null 2>&1
+    check_result $? "Failed to delete Valkey user: $username"
+    valkey-cli ACL SAVE >/dev/null 2>&1
+    check_result $? "Failed to save Valkey user: $username"
 
     # Remove user metadata
-    redis-cli DEL "vesta:redis:users:$username" >/dev/null 2>&1
+    valkey-cli DEL "vesta:valkey:users:$username" >/dev/null 2>&1
 
-    echo "Redis user deleted: $username"
+    echo "Valkey user deleted: $username"
 }
 
-# List Redis users
-list_redis_users() {
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+# List Valkey users
+list_valkey_users() {
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
-    echo "Redis Users:"
+    echo "Valkey Users:"
     echo "============"
 
     # List ACL users
-    redis-cli ACL LIST | while read acl_line; do
+    valkey-cli ACL LIST | while read acl_line; do
         if [ ! -z "$acl_line" ]; then
             username=$(echo "$acl_line" | grep -o 'user [^ ]*' | cut -d' ' -f2)
             status=$(echo "$acl_line" | grep -o '\(on\|off\)')
@@ -125,11 +125,11 @@ list_redis_users() {
                 echo "  ACL: $acl_line"
 
                 # Get metadata if available
-                created=$(redis-cli HGET "vesta:redis:users:$username" "created" 2>/dev/null)
+                created=$(valkey-cli HGET "vesta:valkey:users:$username" "created" 2>/dev/null)
                 if [ ! -z "$created" ] && [ "$created" != "(nil)" ]; then
                     created_date=$(date -d "@$created" 2>/dev/null || echo "Unknown")
-                    permissions=$(redis-cli HGET "vesta:redis:users:$username" "permissions" 2>/dev/null)
-                    key_pattern=$(redis-cli HGET "vesta:redis:users:$username" "key_pattern" 2>/dev/null)
+                    permissions=$(valkey-cli HGET "vesta:valkey:users:$username" "permissions" 2>/dev/null)
+                    key_pattern=$(valkey-cli HGET "vesta:valkey:users:$username" "key_pattern" 2>/dev/null)
 
                     echo "  Created: $created_date"
                     echo "  Permissions: $permissions"
@@ -141,8 +141,8 @@ list_redis_users() {
     done
 }
 
-# Change Redis user password
-change_redis_user_password() {
+# Change Valkey user password
+change_valkey_user_password() {
     local username="$1"
     local new_password="$2"
 
@@ -151,23 +151,23 @@ change_redis_user_password() {
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
     # Change ACL user password
-    redis-cli ACL SETUSER "$username" ">${new_password}" >/dev/null 2>&1
+    valkey-cli ACL SETUSER "$username" ">${new_password}" >/dev/null 2>&1
     check_result $? "Failed to change password for user: $username"
 
     # Update metadata
-    redis-cli HSET "vesta:redis:users:$username" "password_changed" "$(date +%s)" >/dev/null 2>&1
+    valkey-cli HSET "vesta:valkey:users:$username" "password_changed" "$(date +%s)" >/dev/null 2>&1
 
     echo "Password changed successfully for user: $username"
 }
 
-# Enable/Disable Redis user
-toggle_redis_user() {
+# Enable/Disable Valkey user
+toggle_valkey_user() {
     local username="$1"
     local action="$2"  # on or off
 
@@ -181,24 +181,24 @@ toggle_redis_user() {
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
-    redis-cli ACL SETUSER "$username" "$action" >/dev/null 2>&1
+    valkey-cli ACL SETUSER "$username" "$action" >/dev/null 2>&1
     check_result $? "Failed to $action user: $username"
 
     # Update metadata
-    redis-cli HSET "vesta:redis:users:$username" \
+    valkey-cli HSET "vesta:valkey:users:$username" \
         "status" "$action" \
         "status_changed" "$(date +%s)" >/dev/null 2>&1
 
     echo "User $username is now $action"
 }
 
-# Set Redis user permissions
-set_redis_user_permissions() {
+# Set Valkey user permissions
+set_valkey_user_permissions() {
     local username="$1"
     local permissions="$2"
     local key_pattern="${3:-*}"
@@ -208,17 +208,17 @@ set_redis_user_permissions() {
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
     # Reset user permissions and set new ones
-    redis-cli ACL SETUSER "$username" reset on ~"$key_pattern" $permissions >/dev/null 2>&1
+    valkey-cli ACL SETUSER "$username" reset on ~"$key_pattern" $permissions >/dev/null 2>&1
     check_result $? "Failed to set permissions for user: $username"
 
     # Update metadata
-    redis-cli HMSET "vesta:redis:users:$username" \
+    valkey-cli HMSET "vesta:valkey:users:$username" \
         "permissions" "$permissions" \
         "key_pattern" "$key_pattern" \
         "permissions_changed" "$(date +%s)" >/dev/null 2>&1
@@ -228,8 +228,8 @@ set_redis_user_permissions() {
     echo "Key pattern: $key_pattern"
 }
 
-# Get Redis user info
-get_redis_user_info() {
+# Get Valkey user info
+get_valkey_user_info() {
     local username="$1"
 
     if [ -z "$username" ]; then
@@ -237,16 +237,16 @@ get_redis_user_info() {
         exit 1
     fi
 
-    if ! test_redis_auth; then
-        echo "Error: Redis AUTH failed"
+    if ! test_valkey_auth; then
+        echo "Error: Valkey AUTH failed"
         exit 1
     fi
 
-    echo "Redis User Information: $username"
+    echo "Valkey User Information: $username"
     echo "================================="
 
     # Get ACL info
-    acl_info=$(redis-cli ACL GETUSER "$username" 2>/dev/null)
+    acl_info=$(valkey-cli ACL GETUSER "$username" 2>/dev/null)
     if [ $? -eq 0 ]; then
         echo "ACL Information:"
         echo "$acl_info"
@@ -254,26 +254,26 @@ get_redis_user_info() {
     fi
 
     # Get metadata
-    created=$(redis-cli HGET "vesta:redis:users:$username" "created" 2>/dev/null)
+    created=$(valkey-cli HGET "vesta:valkey:users:$username" "created" 2>/dev/null)
     if [ ! -z "$created" ] && [ "$created" != "(nil)" ]; then
         echo "Metadata:"
         echo "  Created: $(date -d "@$created" 2>/dev/null || echo "Unknown")"
-        echo "  Permissions: $(redis-cli HGET "vesta:redis:users:$username" "permissions" 2>/dev/null)"
-        echo "  Key Pattern: $(redis-cli HGET "vesta:redis:users:$username" "key_pattern" 2>/dev/null)"
-        echo "  Status: $(redis-cli HGET "vesta:redis:users:$username" "status" 2>/dev/null)"
-        echo "  Created By: $(redis-cli HGET "vesta:redis:users:$username" "created_by" 2>/dev/null)"
+        echo "  Permissions: $(valkey-cli HGET "vesta:valkey:users:$username" "permissions" 2>/dev/null)"
+        echo "  Key Pattern: $(valkey-cli HGET "vesta:valkey:users:$username" "key_pattern" 2>/dev/null)"
+        echo "  Status: $(valkey-cli HGET "vesta:valkey:users:$username" "status" 2>/dev/null)"
+        echo "  Created By: $(valkey-cli HGET "vesta:valkey:users:$username" "created_by" 2>/dev/null)"
 
-        password_changed=$(redis-cli HGET "vesta:redis:users:$username" "password_changed" 2>/dev/null)
+        password_changed=$(valkey-cli HGET "vesta:valkey:users:$username" "password_changed" 2>/dev/null)
         if [ ! -z "$password_changed" ] && [ "$password_changed" != "(nil)" ]; then
             echo "  Password Changed: $(date -d "@$password_changed" 2>/dev/null || echo "Unknown")"
         fi
 
-        status_changed=$(redis-cli HGET "vesta:redis:users:$username" "status_changed" 2>/dev/null)
+        status_changed=$(valkey-cli HGET "vesta:valkey:users:$username" "status_changed" 2>/dev/null)
         if [ ! -z "$status_changed" ] && [ "$status_changed" != "(nil)" ]; then
             echo "  Status Changed: $(date -d "@$status_changed" 2>/dev/null || echo "Unknown")"
         fi
 
-        permissions_changed=$(redis-cli HGET "vesta:redis:users:$username" "permissions_changed" 2>/dev/null)
+        permissions_changed=$(valkey-cli HGET "vesta:valkey:users:$username" "permissions_changed" 2>/dev/null)
         if [ ! -z "$permissions_changed" ] && [ "$permissions_changed" != "(nil)" ]; then
             echo "  Permissions Changed: $(date -d "@$permissions_changed" 2>/dev/null || echo "Unknown")"
         fi
@@ -288,22 +288,22 @@ get_redis_user_info() {
 ##########
 case "$1" in
     "create")
-        create_redis_user "$2" "$3" "$4" "$5"
+        create_valkey_user "$2" "$3" "$4" "$5"
         ;;
     "delete")
-        delete_redis_user "$2"
+        delete_valkey_user "$2"
         ;;
     "list")
-        list_redis_users
+        list_valkey_users
         ;;
     "password")
-        change_redis_user_password "$2" "$3"
+        change_valkey_user_password "$2" "$3"
         ;;
     "suspend")
-        toggle_redis_user "$2" off
+        toggle_valkey_user "$2" off
         ;;
     "unsuspend")
-        toggle_redis_user "$2" on
+        toggle_valkey_user "$2" on
         ;;
     *)
         echo "Usage: $0 {create|delete|list|password|suspend|unsuspend|permissions|info|test}"

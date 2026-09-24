@@ -25,6 +25,7 @@ software="bash-completion bc bind-utils crudini curl e2fsprogs expect flex freet
     GeoIP ImageMagick whois libidn lsof git certbot python3-certbot-nginx
     mc net-tools openssh-clients pcre2 php-cli pwgen rrdtool rsyslog screen
     sqlite sudo tar telnet unzip vim which zip composer perl-Archive-Zip perl-IO-String"
+software="$software valkey-compat-redis valkey"
     #unbound
 # TODO: softaculous
 
@@ -672,7 +673,7 @@ cat >> /root/.bash_profile << EOF
 PATH="\$PATH:\$VESTA/bin"
 export PATH
 [[ -f "\$VESTA/conf/vesta.conf" ]] && source "\$VESTA/conf/vesta.conf"
-export REDISCLI_AUTH="\$REDIS_AUTH_PASSWORD"
+export VALKEYCLI_AUTH="\$VALKEY_AUTH_PASSWORD"
 EOF
 source /root/.bash_profile
 
@@ -837,15 +838,9 @@ cp -rf $vestacp/letsencrypt/ /etc/letsencrypt
 #----------------------------------------------------------#
 
 if [ "$nginx" = 'yes' ]; then
-    rm -f /etc/nginx/conf.d/*.conf
-    #TODO
-    cp -f $vestacp/nginx/nginx.conf /etc/nginx/
-    cp -f $vestacp/nginx/status.conf /etc/nginx/conf.d/
-    cp -f $vestacp/nginx/phpmyadmin.inc /etc/nginx/conf.d/
-    cp -f $vestacp/nginx/phppgadmin.inc /etc/nginx/conf.d/
-    cp -f $vestacp/nginx/webmail.inc /etc/nginx/conf.d/
+    cp -f $vestacp/nginx/*.conf /etc/nginx/conf.d/
     cp -f $vestacp/logrotate/nginx /etc/logrotate.d/
-    echo > /etc/nginx/conf.d/vesta.conf
+    touch /etc/nginx/conf.d/vesta.conf
     mkdir -p /var/log/nginx/domains
     firewall-cmd --permanent --add-service=http
     firewall-cmd --permanent --add-service=https
@@ -859,16 +854,11 @@ fi
 #----------------------------------------------------------#
 
 if [ "$apache" = 'yes'  ]; then
-    cp -f $vestacp/httpd/httpd.conf /etc/httpd/conf/
+    cp -f $vestacp/httpd/vesta-defaults.conf /etc/httpd/conf.d/
     cp -f $vestacp/httpd/status.conf /etc/httpd/conf.d/
     cp -f $vestacp/httpd/ssl.conf /etc/httpd/conf.d/
-#    cp -f $vestacp/httpd/ruid2.conf /etc/httpd/conf.d/
+    sed -i 's/^Listen 80$/#Listen 80/' /etc/httpd/conf/httpd.conf
     cp -f $vestacp/logrotate/httpd /etc/logrotate.d/
-    if [ $release -lt 7 ]; then
-        cd /etc/httpd/conf.d
-        echo "MEFaccept 127.0.0.1" >> mod_extract_forwarded.conf
-        echo > proxy_ajp.conf
-    fi
     if [ -e "/etc/httpd/conf.modules.d/00-dav.conf" ]; then
         cd /etc/httpd/conf.modules.d
         sed -i "s/^/#/" 00-dav.conf 00-lua.conf 00-proxy.conf
@@ -876,10 +866,9 @@ if [ "$apache" = 'yes'  ]; then
     sed -i 's#.*LoadModule proxy_module modules/mod_proxy.so#LoadModule proxy_module modules/mod_proxy.so#' /etc/httpd/conf.modules.d/00-proxy.conf
     sed -i 's#.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#' /etc/httpd/conf.modules.d/00-proxy.conf
     sed -i 's#.*LoadModule proxy_http_module modules/mod_proxy_http.so#LoadModule proxy_http_module modules/mod_proxy_http.so#' /etc/httpd/conf.modules.d/00-proxy.conf
-    echo > /etc/httpd/conf.d/vesta.conf
-    cd /var/log/httpd
-    touch access_log error_log suexec.log
-    chmod 640 access_log error_log suexec.log
+    touch /etc/httpd/conf.d/vesta.conf
+    touch /var/log/httpd/{access_log,error_log,suexec.log}
+    chmod 640 /var/log/httpd/{access_log,error_log,suexec.log}
     chmod -f 777 /var/lib/php/session
     chmod a+x /var/log/httpd
     mkdir -p /var/log/httpd/domains
@@ -1028,39 +1017,39 @@ fi
 
 
 #----------------------------------------------------------#
-#                     Configure Redis                      #
+#                     Configure Valkey                      #
 #----------------------------------------------------------#
 
-# Configure Redis with AUTH
-if [ -e "/usr/bin/redis-cli" ]; then
-    # Generate Redis AUTH password
-    redis_auth_pass=$(gen_pass)
+# Configure Valkey with AUTH
+if [ -e "/usr/bin/valkey-cli" ]; then
+    # Generate Valkey AUTH password
+    valkey_auth_pass=$(gen_pass)
     
-    # Backup original Redis config
-    cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
+    # Backup original Valkey config
+    cp /etc/valkey/valkey.conf /etc/valkey/valkey.conf.backup
     
-    # Configure Redis with AUTH
-    sed -i 's/^bind 127.0.0.1/bind 127.0.0.1/' /etc/redis/redis.conf
-    sed -i 's/^# maxmemory .*/maxmemory 256mb/' /etc/redis/redis.conf
-    sed -i 's/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
-    sed -i 's/^# aclfile .*/aclfile \/etc\/redis\/users.acl/' /etc/redis/redis.conf
-    touch /etc/redis/users.acl
+    # Configure Valkey with AUTH
+    sed -i 's/^bind 127.0.0.1/bind 127.0.0.1/' /etc/valkey/valkey.conf
+    sed -i 's/^# maxmemory .*/maxmemory 256mb/' /etc/valkey/valkey.conf
+    sed -i 's/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/' /etc/valkey/valkey.conf
+    sed -i 's/^# aclfile .*/aclfile \/etc\/valkey\/users.acl/' /etc/valkey/valkey.conf
+    touch /etc/valkey/users.acl
     
     # Additional security settings
-    echo "protected-mode yes" >> /etc/redis/redis.conf
-    echo "timeout 300" >> /etc/redis/redis.conf
+    echo "protected-mode yes" >> /etc/valkey/valkey.conf
+    echo "timeout 300" >> /etc/valkey/valkey.conf
     
-    # Enable and start Redis
-    systemctl enable --now redis
-    check_result $? "redis start failed"
+    # Enable and start Valkey
+    systemctl enable --now valkey
+    check_result $? "valkey start failed"
     
-    # Create redis default user's password
-    redis-cli ACL SETUSER default on ">${redis_auth_pass}" "~*" "&*" "+@all"
-    redis ACL SAVE
-    echo "REDIS_AUTH_PASSWORD='$redis_auth_pass'" >> $VESTA/conf/vesta.conf
+    # Create valkey default user's password
+    valkey-cli ACL SETUSER default on ">${valkey_auth_pass}" "~*" "&*" "+@all"
+    valkey-cli ACL SAVE
+    echo "VALKEY_AUTH_PASSWORD='$valkey_auth_pass'" >> $VESTA/conf/vesta.conf
     chmod 600 $VESTA/conf/vesta.conf
     
-    echo "Redis configured with AUTH password: $redis_auth_pass"
+    echo "Valkey configured with AUTH password: $valkey_auth_pass"
 fi
 
 
@@ -1138,9 +1127,6 @@ if [ "$dovecot" = 'yes' ]; then
     cp -rf $vestacp/dovecot /etc/
     cp -f $vestacp/logrotate/dovecot /etc/logrotate.d/
     chown -R root:root /etc/dovecot*
-    if [ "$release" -eq 7 ]; then
-        sed -i "s#namespace inbox {#namespace inbox {\n  inbox = yes#" /etc/dovecot/conf.d/15-mailboxes.conf
-    fi
     systemctl enable --now dovecot
     check_result $? "dovecot start failed"
 fi
@@ -1151,16 +1137,8 @@ fi
 #----------------------------------------------------------#
 
 if [ "$clamd" = 'yes' ]; then
-    useradd clam -s /sbin/nologin -d /var/lib/clamav 2>/dev/null
-    gpasswd -a clam exim
-    gpasswd -a clam mail
-    cp -f $vestacp/clamav/clamd.conf /etc/
-    cp -f $vestacp/clamav/freshclam.conf /etc/
-    mkdir -p /var/log/clamav /var/run/clamav
-    chown clam:clam /var/log/clamav /var/run/clamav
-    chown -R clam:clam /var/lib/clamav
-    /usr/bin/freshclam
-    systemctl enable --now clamd.service clamav-freshclam-once.timer
+    cp -f $vestacp/clamav/vesta.conf /etc/clamd.d/
+    systemctl enable --now clamd@vesta.service clamav-freshclam-once.timer
     check_result $? "clamd start failed"
 fi
 
@@ -1169,6 +1147,7 @@ fi
 #                  Configure SpamAssassin                  #
 #----------------------------------------------------------#
 
+#TODO
 if [ "$spamd" = 'yes' ]; then
     systemctl enable --now spamassassin
     check_result $? "spamassassin start failed"
