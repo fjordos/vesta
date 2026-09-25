@@ -1,0 +1,82 @@
+# TextCat - language guesser
+#
+loadplugin Mail::SpamAssassin::Plugin::TextCat
+
+# Rule2XSBody - speedup by compilation of ruleset to native code
+#
+loadplugin Mail::SpamAssassin::Plugin::Rule2XSBody
+
+# ASN - Look up the Autonomous System Number of the connecting IP
+# and create a header containing ASN data for bayes tokenization.
+# See plugin's POD docs for usage info.
+#
+loadplugin Mail::SpamAssassin::Plugin::ASN
+
+# PhishTag - allows sites to rewrite suspect phish-mail URLs
+# (Note: this requires configuration, see http://umut.topkara.org/PhishTag)
+#
+loadplugin Mail::SpamAssassin::Plugin::PhishTag
+
+# TxRep - Reputation database that replaces AWL
+#
+loadplugin Mail::SpamAssassin::Plugin::TxRep
+
+# URILocalBL - Provides ISP and Country code based filtering as well as
+# quick IP based blocks without a full RBL implementation - Bug 7060
+#
+loadplugin Mail::SpamAssassin::Plugin::URILocalBL
+
+# PDFInfo - Use several methods to detect a PDF file's ham/spam traits
+#
+loadplugin Mail::SpamAssassin::Plugin::PDFInfo
+
+# ResourceLimits - assure your spamd child processes
+# do not exceed specified CPU or memory limit
+#
+loadplugin Mail::SpamAssassin::Plugin::ResourceLimits
+
+# FromNameSpoof - help stop spam that tries to spoof other domains using
+# the from name
+#
+loadplugin Mail::SpamAssassin::Plugin::FromNameSpoof
+
+# Phishing - finds uris used in phishing campaigns detected by
+# OpenPhish or PhishTank feeds.
+#
+loadplugin Mail::SpamAssassin::Plugin::Phishing
+
+# OLEVBMacro - Detects both OLE macros and VB code inside Office documents
+#
+# It tries to discern between safe and malicious code but due to the threat
+# macros present to security, many places block these type of documents outright.
+#
+# For this plugin to work, Archive::Zip and IO::String modules are required.
+#
+loadplugin Mail::SpamAssassin::Plugin::OLEVBMacro
+
+# ExtractText - Extract text from documents or images for matching
+#
+# Requires manual configuration, see plugin documentation.
+#
+loadplugin Mail::SpamAssassin::Plugin::ExtractText
+
+# DecodeShortUrl - Check for shortened URLs
+#
+# Note that this plugin will send HTTP requests to different URL shortener
+# services.  Enabling caching is recommended, see plugin documentation.
+#
+loadplugin Mail::SpamAssassin::Plugin::DecodeShortURLs
+
+# AuthRes - use Authentication-Results header fields
+#
+# This plugin parses Authentication-Results header fields and can supply
+# the results obtained to other plugins.
+#
+loadplugin Mail::SpamAssassin::Plugin::AuthRes
+
+# Redirectors - Check for redirector URLs
+#
+# Note that this plugin will send HTTP requests to different URL redirector
+# services.  Enabling caching is recommended, see plugin documentation.
+#
+loadplugin Mail::SpamAssassin::Plugin::Redirectors

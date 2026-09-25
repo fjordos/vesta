@@ -451,8 +451,6 @@ fi
 dnf -y update
 check_result $? 'dnf update failed'
 
-
-
 # Installing Remi repository
 if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
     # Installing RPM Fusion repository
@@ -470,10 +468,8 @@ fi
 #----------------------------------------------------------#
 
 # Creating backup directory tree
-mkdir -p $vst_backups
-cd $vst_backups
-mkdir nginx httpd php php-fpm vsftpd proftpd named exim dovecot clamd \
-    spamassassin mysql postgresql mongodb vesta
+mkdir -p "$vst_backups"
+mkdir "$vst_backups"/{nginx,httpd,php,php-fpm,vsftpd,proftpd,named,exim,dovecot,clamd,spamassassin,mysql,postgresql,mongodb,vesta}
 
 # Backup Nginx configuration
 systemctl stop nginx > /dev/null 2>&1
@@ -484,14 +480,14 @@ systemctl stop httpd > /dev/null 2>&1
 cp -r /etc/httpd/* $vst_backups/httpd > /dev/null 2>&1
 
 # Backup PHP-FPM configuration
-systemctl stop php-fpm php$phpv-php-fpm >/dev/null 2>&1
+systemctl stop php-fpm "php*-php-fpm" >/dev/null 2>&1
 cp /etc/php.ini $vst_backups/php > /dev/null 2>&1
 cp -r /etc/php.d  $vst_backups/php > /dev/null 2>&1
 cp /etc/php-fpm.conf $vst_backups/php-fpm > /dev/null 2>&1
-mv -f /etc/php-fpm.d/* $vst_backups/php-fpm/ > /dev/null 2>&1
+truncate -s0 /etc/php-fpm.d/www.conf /etc/opt/remi/php*/php-fpm.d/www.conf > /dev/null 2>&1
 
 # Backup Bind configuration
-dnf remove bind-chroot > /dev/null 2>&1
+dnf -y remove bind-chroot > /dev/null 2>&1
 systemctl stop named > /dev/null 2>&1
 cp /etc/named.conf $vst_backups/named >/dev/null 2>&1
 
@@ -539,7 +535,7 @@ mv $VESTA/conf/* $vst_backups/vesta > /dev/null 2>&1
 
 
 #----------------------------------------------------------#
-#                     Package Excludes                     #
+#                     Package Includes                     #
 #----------------------------------------------------------#
 
 # Excluding packages
@@ -552,7 +548,7 @@ if [ "$apache" = 'yes' ]; then
     software="$software httpd mod_ssl mod_fcgid"
 fi
 if [ "$phpfpm" = 'yes' ]; then
-    software="$software php${phpv}-php-fpm"
+    software="$software php-fpm"
 fi
 if [ "$vsftpd" = 'yes' ]; then
     software="$software vsftpd"
@@ -564,23 +560,27 @@ if [ "$named" = 'yes' ]; then
     software="$software bind"
 fi
 if [ "$exim" = 'yes' ]; then
-    software="$software exim clamd clamav clamav-milter exim-clamav clamav-freshclam spamassassin dovecot roundcubemail"
+    software="$software exim roundcubemail"
+    # spamassasin
+    software="$software "
+    # TODO: change to postfix is in progress
     software="$software postfix"
 fi
 if [ "$clamd" = 'yes' ]; then
     software="$software clamd clamav clamav-milter exim-clamav clamav-freshclam"
 fi
 if [ "$spamd" = 'yes' ]; then
-    software="$software spamassassin"
+    software="$software spamassassin spamassassin-compile spamassassin-dqs spamassassin-iXhash2
+                        perl-IO-String perl-Archive-Zip perl-IO-String perl-Archive-Zip"
 fi
 if [ "$dovecot" = 'yes' ]; then
-    software="$software dovecot"
+    software="$software dovecot dovecot-pigeonhole"
 fi
 if [ "$mysql" = 'yes' ]; then
-    software="$software mariadb mariadb-server php${phpv}-php-mysqlnd phpMyAdmin"
+    software="$software mariadb mariadb-server php-mysqlnd phpMyAdmin"
 fi
 if [ "$postgresql" = 'yes' ]; then
-    software="$software postgresql  postgresql-server php${phpv}-php-pgsql phpPgAdmin"
+    software="$software postgresql  postgresql-server php-pgsql phpPgAdmin"
 fi
 if [ "$fail2ban" = 'yes' ]; then
     software="$software fail2ban"
@@ -632,20 +632,14 @@ adduser backup 2>/dev/null
 ln -sf /home/backup /backup
 chmod a+x /backup
 
-# Set directory color
-echo 'LS_COLORS="$LS_COLORS:di=00;33"' >> /etc/profile
-
 # Register /sbin/nologin and /usr/sbin/nologin
 echo "/sbin/nologin" >> /etc/shells
 echo "/usr/sbin/nologin" >> /etc/shells
 
 # Changing default systemd interval
-if [ "$release" -eq '7' ]; then
-    # Hi Lennart
-    echo "DefaultStartLimitInterval=1s" >> /etc/systemd/system.conf
-    echo "DefaultStartLimitBurst=60" >> /etc/systemd/system.conf
-    systemctl daemon-reexec
-fi
+crudini --set /etc/systemd/system.conf Manager DefaultStartLimitInterval 1s
+crudini --set /etc/systemd/system.conf Manager DefaultStartLimitBurst 60
+systemctl daemon-reexec
 
 
 #----------------------------------------------------------#
@@ -681,15 +675,10 @@ source /root/.bash_profile
 cp -f $vestacp/logrotate/vesta /etc/logrotate.d/
 
 # Building directory tree and creating some blank files for Vesta
-mkdir -p $VESTA/conf $VESTA/log $VESTA/ssl $VESTA/data/ips \
-    $VESTA/data/queue $VESTA/data/users $VESTA/data/firewall \
-    $VESTA/data/sessions
-touch $VESTA/data/queue/backup.pipe $VESTA/data/queue/disk.pipe \
-    $VESTA/data/queue/webstats.pipe $VESTA/data/queue/restart.pipe \
-    $VESTA/data/queue/traffic.pipe $VESTA/log/system.log \
-    $VESTA/log/nginx-error.log $VESTA/log/auth.log
+mkdir -p $VESTA/{conf,log,ssl,data/ips,data/queue,data/users,data/firewall,data/sessions}
+touch $VESTA/data/queue/{backup,disk,webstats,restart,traffic}.pipe $VESTA/log/{system,nginx-error,auth}.log
 chmod 751 $VESTA/conf
-chmod 750 $VESTA/data/users $VESTA/data/ips $VESTA/log
+chmod 750 $VESTA/data/{users,ips} $VESTA/log
 chmod -R 750 $VESTA/data/queue
 chmod 660 $VESTA/log/*
 rm -f /var/log/vesta
@@ -1147,8 +1136,9 @@ fi
 #                  Configure SpamAssassin                  #
 #----------------------------------------------------------#
 
-#TODO
 if [ "$spamd" = 'yes' ]; then
+    sa-update 2>/dev/null
+    sa-compile 2>/dev/null
     systemctl enable --now spamassassin
     check_result $? "spamassassin start failed"
     if [ "$release" -ge '7' ]; then
@@ -1229,22 +1219,22 @@ fi
 #----------------------------------------------------------#
 
 # Deleting old admin user
-if [ ! -z "$(grep ^admin: /etc/passwd)" ] && [ "$force" = 'yes' ]; then
+if grep -q '^admin:' /etc/passwd && [ "$force" = 'yes' ]; then
     chattr -i /home/admin/conf > /dev/null 2>&1
     userdel -f admin >/dev/null 2>&1
     chattr -i /home/admin/conf >/dev/null 2>&1
     mv -f /home/admin  $vst_backups/home/ >/dev/null 2>&1
     rm -f /tmp/sess_* >/dev/null 2>&1
 fi
-if [ ! -z "$(grep ^admin: /etc/group)" ] && [ "$force" = 'yes' ]; then
+if grep -q '^admin:' /etc/group && [ "$force" = 'yes' ]; then
     groupdel admin > /dev/null 2>&1
 fi
 
 # Adding Vesta admin account
-$VESTA/bin/v-add-user admin $vpass $email vesta System Administrator
+$VESTA/bin/v-add-user admin "'$vpass'" "$email" vesta System Administrator
 check_result $? "can't create admin user"
 $VESTA/bin/v-change-user-shell admin bash
-$VESTA/bin/v-change-user-language admin $lang
+$VESTA/bin/v-change-user-language admin "$lang"
 
 # Configuring system IPs
 $VESTA/bin/v-update-sys-ip
