@@ -108,6 +108,13 @@ set_default_lang() {
 #                    Verifications                         #
 #----------------------------------------------------------#
 
+if [ -d "$vestacp" ] ;then
+    echo "Vesta is not installable, because the release is not supported yet"
+    echo "You can try to install it manually, or contact the support"
+    echo "You have option to contribute and improve the Vesta on https://github.com/fjordos/vesta"
+    exit 1
+fi
+
 # Translating argument to --gnu-long-options
 for arg; do
     delim=""
