@@ -9,7 +9,7 @@ export PATH="$PATH:/sbin"
 . /etc/os-release
 VERSION='fedora'
 VESTA='/usr/local/vesta'
-memory="$(grep 'MemTotal' /proc/meminfo |tr ' ' '\n' | grep [0-9])"
+memory="$(grep 'MemTotal' /proc/meminfo | awk 'print $2')"
 release="${VERSION_ID}"
 vestacp="$VESTA/install/$VERSION/$release"
 sysphpv="8.5"
@@ -561,8 +561,6 @@ if [ "$named" = 'yes' ]; then
 fi
 if [ "$exim" = 'yes' ]; then
     software="$software exim roundcubemail"
-    # spamassasin
-    software="$software "
     # TODO: change to postfix is in progress
     software="$software postfix"
 fi
@@ -799,9 +797,8 @@ key_start=$(grep -n "BEGIN PRIVATE" /tmp/vst.pem |cut -f 1 -d:)
 key_end=$(grep -n  "END PRIVATE" /tmp/vst.pem |cut -f 1 -d:)
 
 # Adding SSL certificate
-cd $VESTA/ssl
-sed -n "1,${crt_end}p" /tmp/vst.pem > certificate.crt
-sed -n "$key_start,${key_end}p" /tmp/vst.pem > certificate.key
+sed -n "1,${crt_end}p" /tmp/vst.pem > $VESTA/ssl/certificate.crt
+sed -n "$key_start,${key_end}p" /tmp/vst.pem > $VESTA/ssl/certificate.key
 chown root:mail $VESTA/ssl/*
 chmod 660 $VESTA/ssl/*
 rm /tmp/vst.pem
@@ -849,8 +846,7 @@ if [ "$apache" = 'yes'  ]; then
     sed -i 's/^Listen 80$/#Listen 80/' /etc/httpd/conf/httpd.conf
     cp -f $vestacp/logrotate/httpd /etc/logrotate.d/
     if [ -e "/etc/httpd/conf.modules.d/00-dav.conf" ]; then
-        cd /etc/httpd/conf.modules.d
-        sed -i "s/^/#/" 00-dav.conf 00-lua.conf 00-proxy.conf
+        sed -i "s/^/#/" /etc/httpd/conf.modules.d/{00-dav.conf,00-lua.conf,00-proxy.conf}
     fi
     sed -i 's#.*LoadModule proxy_module modules/mod_proxy.so#LoadModule proxy_module modules/mod_proxy.so#' /etc/httpd/conf.modules.d/00-proxy.conf
     sed -i 's#.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so#' /etc/httpd/conf.modules.d/00-proxy.conf
@@ -1160,10 +1156,9 @@ if [ "$exim" = 'yes' ] && [ "$mysql" = 'yes' ]; then
         cp -f $vestacp/roundcube/roundcubemail.conf /etc/httpd/conf.d/
     fi
     cp -f $vestacp/roundcube/main.inc.php /etc/roundcubemail/config.inc.php
-    cd /usr/share/roundcubemail/plugins/password
-    cp -f $vestacp/roundcube/vesta.php drivers/vesta.php
-    cp -f $vestacp/roundcube/config.inc.php config.inc.php
-    sed -i "s/localhost/$servername/g" config.inc.php
+    cp -f $vestacp/roundcube/vesta.php /usr/share/roundcubemail/plugins/password/drivers/vesta.php
+    cp -f $vestacp/roundcube/config.inc.php /usr/share/roundcubemail/plugins/password/config.inc.php
+    sed -i "s/localhost/$servername/g" /usr/share/roundcubemail/plugins/password/config.inc.php
     chmod a+r /etc/roundcubemail/*
     chmod -f 777 /var/log/roundcubemail
     r="$(gen_pass)"
