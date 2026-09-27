@@ -1,11 +1,18 @@
-passdb {
+passdb passwd {
   driver = passwd-file
-  args = scheme=SHA512-CRYPT username_format=%n /etc/exim/domains/%d/passwd
+  auth_username_format = %{user}
+  passwd_file_path = /etc/exim/domains/%{domain}/passwd
+  auth_allow_weak_schemes = yes
 }
 
-userdb {
+userdb passwd {
   driver = passwd-file
-  args = username_format=%n /etc/exim/domains/%d/passwd
-  override_fields = uid=dovecot gid=dovecot
-  #auth_verbose = default
+  auth_username_format = %{user}
+  passwd_file_path = /etc/exim/domains/%{domain}/passwd
+  fields {
+#    mail_location = maildir:~/mail/%{domain}/%{user}
+    mail_driver = mdbox
+    mail_path = ~/mail/%{domain}/%{user}
+    gid = dovenull
+  }
 }
