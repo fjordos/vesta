@@ -25,8 +25,8 @@ is_system_enabled "$CRON_SYSTEM" 'CRON_SYSTEM'
 is_package_full 'CRON_JOBS'
 #get_next_cronjob
 #check_cron=$(grep 'v-update-sys-vesta' $USER_DATA/cron.conf)
-if systemctl is-enabled vesta-update.timer ; then
-  if systemctl is-active vesta-update.timer ; then
+if systemctl is-enabled dnf-automatic.timer ; then
+  if systemctl is-active dnf-automatic.timer ; then
     exit
   fi
 fi
@@ -65,8 +65,8 @@ fi
 # Sync cronjobs with system crond
 sync_cron_jobs
 
-systemctl enable vesta-update.timer
-systemctl start vesta-update.timer
+systemctl enable dnf-automatic.timer
+systemctl start dnf-automatic.timer
 
 #----------------------------------------------------------#
 #                       Vesta                              #

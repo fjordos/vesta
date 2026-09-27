@@ -45,6 +45,7 @@ software="
     certbot
     crudini
     curl
+    dnf5-plugin-automatic
     e2fsprogs
     expect
     flex
@@ -1369,6 +1370,7 @@ chown admin:admin "$VESTA/data/sessions"
 $VESTA/upd/add_notifications.sh
 
 # Adding cronjob for autoupdates
+cp -f "$vestacp/systemd/system/dnf5-automatic.service.d/" /etc/systemd/system/dnf5-automatic.service.d
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
 $VESTA/bin/v-change-vesta-port "$port"
