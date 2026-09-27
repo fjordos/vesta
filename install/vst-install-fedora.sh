@@ -523,15 +523,15 @@ mkdir -p "$vst_backups"
 mkdir "$vst_backups"/{nginx,httpd,php,php-fpm,vsftpd,proftpd,named,exim,dovecot,clamd,spamassassin,mysql,postgresql,mongodb,vesta}
 
 # Backup Nginx configuration
-systemctl stop nginx > /dev/null 2>&1
+#systemctl stop nginx > /dev/null 2>&1
 cp -r /etc/nginx/* $vst_backups/nginx > /dev/null 2>&1
 
 # Backup Apache configuration
-systemctl stop httpd > /dev/null 2>&1
+#systemctl stop httpd > /dev/null 2>&1
 cp -r /etc/httpd/* $vst_backups/httpd > /dev/null 2>&1
 
 # Backup PHP-FPM configuration
-systemctl stop php-fpm "php*-php-fpm" >/dev/null 2>&1
+#systemctl stop php-fpm "php*-php-fpm" >/dev/null 2>&1
 cp /etc/php.ini $vst_backups/php > /dev/null 2>&1
 cp -r /etc/php.d  $vst_backups/php > /dev/null 2>&1
 cp /etc/php-fpm.conf $vst_backups/php-fpm > /dev/null 2>&1
@@ -539,48 +539,48 @@ truncate -s0 /etc/php-fpm.d/www.conf /etc/opt/remi/php*/php-fpm.d/www.conf > /de
 
 # Backup Bind configuration
 dnf -y remove bind-chroot > /dev/null 2>&1
-systemctl stop named > /dev/null 2>&1
+#systemctl stop named > /dev/null 2>&1
 cp /etc/named.conf $vst_backups/named >/dev/null 2>&1
 
 # Backup Vsftpd configuration
-systemctl stop vsftpd > /dev/null 2>&1
+#systemctl stop vsftpd > /dev/null 2>&1
 cp /etc/vsftpd/vsftpd.conf $vst_backups/vsftpd >/dev/null 2>&1
 
 # Backup ProFTPD configuration
-systemctl stop proftpd > /dev/null 2>&1
+#systemctl stop proftpd > /dev/null 2>&1
 cp /etc/proftpd.conf $vst_backups/proftpd >/dev/null 2>&1
 
 # Backup Exim configuration
-systemctl stop exim > /dev/null 2>&1
+#systemctl stop exim > /dev/null 2>&1
 cp -r /etc/exim/* $vst_backups/exim >/dev/null 2>&1
 
 # Backup ClamAV configuration
-systemctl stop clamd clamav-freshclam > /dev/null 2>&1
+#systemctl stop clamd clamav-freshclam > /dev/null 2>&1
 cp /etc/clamd.conf $vst_backups/clamd >/dev/null 2>&1
 cp -r /etc/clamd.d $vst_backups/clamd >/dev/null 2>&1
 
 # Backup SpamAssassin configuration
-systemctl stop spamassassin > /dev/null 2>&1
+#systemctl stop spamassassin > /dev/null 2>&1
 cp -r /etc/mail/spamassassin/* $vst_backups/spamassassin >/dev/null 2>&1
 
 # Backup Dovecot configuration
-systemctl stop dovecot > /dev/null 2>&1
+#systemctl stop dovecot > /dev/null 2>&1
 cp /etc/dovecot.conf $vst_backups/dovecot > /dev/null 2>&1
 cp -r /etc/dovecot/* $vst_backups/dovecot > /dev/null 2>&1
 
 # Backup MySQL/MariaDB configuration and data
-systemctl stop mysql mysqld mariadb > /dev/null 2>&1
+#systemctl stop mysql mysqld mariadb > /dev/null 2>&1
 mv /var/lib/mysql $vst_backups/mysql/mysql_datadir >/dev/null 2>&1
 cp /etc/my.cnf $vst_backups/mysql > /dev/null 2>&1
 cp /etc/my.cnf.d $vst_backups/mysql > /dev/null 2>&1
 mv /root/.my.cnf  $vst_backups/mysql > /dev/null 2>&1
 
 # Backup MySQL/MariaDB configuration and data
-systemctl stop postgresql > /dev/null 2>&1
+#systemctl stop postgresql > /dev/null 2>&1
 mv /var/lib/pgsql/data $vst_backups/postgresql/  >/dev/null 2>&1
 
 # Backup Vesta
-systemctl stop vesta vesta-php > /dev/null 2>&1
+#systemctl stop vesta vesta-php > /dev/null 2>&1
 mv $VESTA/data/* $vst_backups/vesta > /dev/null 2>&1
 mv $VESTA/conf/* $vst_backups/vesta > /dev/null 2>&1
 
@@ -1041,11 +1041,12 @@ if [ "$postgresql" = 'yes' ]; then
     if [ $release -eq 5 ]; then
         service postgresql start
         sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$ppass'"
-        service postgresql stop
+        systemctl stop postgresql
         cp -f $vestacp/postgresql/pg_hba.conf /var/lib/pgsql/data/
-        service postgresql start
+        systemctl start postgresql
     else
-        service postgresql initdb
+        systemctl start postgresql
+        systemctl stop postgresql
         cp -f $vestacp/postgresql/pg_hba.conf /var/lib/pgsql/data/
         systemctl enable --now postgresql
         sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$ppass'"
