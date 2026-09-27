@@ -1179,8 +1179,7 @@ fi
 #----------------------------------------------------------#
 
 if [ "$clamd" = 'yes' ]; then
-    cp -f $vestacp/clamav/vesta.conf /etc/clamd.d/
-    systemctl enable --now clamd@vesta.service clamav-freshclam-once.timer
+    systemctl enable --now clamd.exim.service clamav-freshclam-once.timer
     check_result $? "clamd start failed"
 fi
 
