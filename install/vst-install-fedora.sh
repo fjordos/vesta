@@ -585,7 +585,8 @@ if [ "$mysql" = 'yes' ]; then
     software="$software mariadb mariadb-server php-mysqlnd phpMyAdmin"
 fi
 if [ "$postgresql" = 'yes' ]; then
-    software="$software postgresql  postgresql-server php-pgsql phpPgAdmin"
+    software="$software postgresql  postgresql-server php-pgsql"
+    # TODO: replace phpPgAdmin
 fi
 if [ "$fail2ban" = 'yes' ]; then
     software="$software fail2ban"
