@@ -1006,14 +1006,14 @@ if [ "$mysql" = 'yes' ]; then
 
     # Securing MySQL installation
     mpass=$(gen_pass)
-    mysqladmin -u root password $mpass
-    echo -e "[client]\npassword='$mpass'\n" > /root/.my.cnf
+    mariadb-admin -u root password "$mpass"
+    echo -e "[client]\npassword=\"$mpass\"\n" > /root/.my.cnf
     chmod 600 /root/.my.cnf
-    mysql -e "DELETE FROM mysql.user WHERE User=''"
-    mysql -e "DROP DATABASE test" >/dev/null 2>&1
-    mysql -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'"
-    mysql -e "DELETE FROM mysql.user WHERE user='' or password='';"
-    mysql -e "FLUSH PRIVILEGES"
+    mariadb -e "DELETE FROM mysql.user WHERE User=''"
+    mariadb -e "DROP DATABASE test" >/dev/null 2>&1
+    mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'"
+    mariadb -e "DELETE FROM mysql.user WHERE user='' or password='';"
+    mariadb -e "FLUSH PRIVILEGES"
 
     # Configuring phpMyAdmin
     if [ "$apache" = 'yes' ]; then
@@ -1021,7 +1021,7 @@ if [ "$mysql" = 'yes' ]; then
     fi
     mysql < /usr/share/phpMyAdmin/sql/create_tables.sql
     p=$(gen_pass)
-    mysql -e "GRANT ALL ON phpmyadmin.*
+    mariadb -e "GRANT ALL ON phpmyadmin.*
         TO phpmyadmin@localhost IDENTIFIED BY '$p'"
     cp -f $vestacp/pma/config.inc.conf /etc/phpMyAdmin/config.inc.php
     sed -i "s/%blowfish_secret%/$(gen_pass 32)/g" /etc/phpMyAdmin/config.inc.php
@@ -1045,8 +1045,7 @@ if [ "$postgresql" = 'yes' ]; then
         cp -f $vestacp/postgresql/pg_hba.conf /var/lib/pgsql/data/
         systemctl start postgresql
     else
-        systemctl start postgresql
-        systemctl stop postgresql
+        /usr/bin/postgresql-setup --initdb
         cp -f $vestacp/postgresql/pg_hba.conf /var/lib/pgsql/data/
         systemctl enable --now postgresql
         sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '$ppass'"
@@ -1055,7 +1054,6 @@ if [ "$postgresql" = 'yes' ]; then
     if [ "$apache" = 'yes' ]; then
         cp -f $vestacp/pga/phpPgAdmin.conf /etc/httpd/conf.d/
     fi
-    cp -f $vestacp/pga/config.inc.php /etc/phpPgAdmin/
 fi
 
 
@@ -1296,8 +1294,8 @@ ip=$(ip addr|grep 'inet '|grep global|head -n1|awk '{print $2}'|cut -f1 -d/)
 
 # Configuring firewall
 if [ "$iptables" = 'yes' ]; then
-    systemctl disable firewalld >/dev/null 2>&1
-    $VESTA/bin/v-update-firewall
+    systemctl enable --now firewalld
+    #$VESTA/bin/v-update-firewall
 fi
 
 # Get public IP
@@ -1357,8 +1355,8 @@ fi
 crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-deploy-hook.sh"
 
 # Starting Vesta service
-cp-f "$vestacp/vesta/vesta.service" /etc/systemd/system/
-cp-f "$vestacp/vesta/vesta-php.service" /etc/systemd/system/
+cp -f "$vestacp/vesta/vesta.service" /etc/systemd/system/
+cp -f "$vestacp/vesta/vesta-php.service" /etc/systemd/system/
 cp -f "$vestacp/vesta/vesta.php" /etc/vesta/
 
 systemctl daemon-reload
