@@ -852,6 +852,9 @@ cp -rf $vestacp/firewall $VESTA/data/
 # Configuring server hostname
 $VESTA/bin/v-change-sys-hostname $servername 2>/dev/null
 
+# generating SSL cert with certbot
+
+
 # Generating SSL certificate
 $VESTA/bin/v-generate-ssl-cert $(hostname) $email 'US' 'California' \
      'San Francisco' 'Vesta Control Panel' 'IT' > /tmp/vst.pem
