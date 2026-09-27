@@ -9,7 +9,7 @@ export PATH="$PATH:/sbin"
 . /etc/os-release
 VERSION='fedora'
 VESTA='/usr/local/vesta'
-memory="$(grep 'MemTotal' /proc/meminfo | awk 'print $2')"
+memory="$(grep 'MemTotal' /proc/meminfo | awk '{print $2}')"
 release="${VERSION_ID}"
 vestacp="$VESTA/install/$VERSION/$release"
 sysphpv="8.5"

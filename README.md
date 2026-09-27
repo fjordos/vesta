@@ -19,7 +19,7 @@ ssh root@your.server
 
 Download the installation script, and run it:
 ```bash
-curl https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install.sh | bash
+curl --follow https://github.com/fjordos/vesta/raw/refs/heads/master/install/vst-install.sh | bash
 ```
 
 How to install (3 step)
@@ -32,7 +32,7 @@ ssh root@your.server
 
 Download the installation script:
 ```bash
-curl -O https://raw.githubusercontent.com/fjordos/vesta/refs/heads/master/install/vst-install.sh
+curl -O --follow https://github.com/fjordos/vesta/raw/refs/heads/master/install/vst-install.sh
 ```
 Then run it:
 ```bash
