@@ -649,7 +649,13 @@ fi
 #----------------------------------------------------------#
 
 # Installing VestaCP
-[[ -d "$VESTA" ]] && exit 1 || mkdir -p "$VESTA"
+if [[ -d "$VESTA" ]] ; then
+  echo "$VESTA directory exists, therefore the Vesta installation will be aborted."
+  echo "When you want to reinstall Vesta, have to remove the Vesta files and use --force option"
+  echo "Run: \"rm -rf $VESTA\" before re-run \"./vst-install-fedora.sh --force\""
+  exit 1
+fi
+mkdir -p "$VESTA"
 git clone https://github.com/fjordos/vesta.git "$VESTA"
 git checkout "$vesta_version" "$VESTA"
 
