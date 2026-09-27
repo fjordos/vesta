@@ -852,24 +852,11 @@ cp -rf $vestacp/firewall $VESTA/data/
 # Configuring server hostname
 $VESTA/bin/v-change-sys-hostname $servername 2>/dev/null
 
-# generating SSL cert with certbot
-
-
-# Generating SSL certificate
-$VESTA/bin/v-generate-ssl-cert $(hostname) $email 'US' 'California' \
-     'San Francisco' 'Vesta Control Panel' 'IT' > /tmp/vst.pem
-
-# Parsing certificate file
-crt_end=$(grep -n "END CERTIFICATE-" /tmp/vst.pem |cut -f 1 -d:)
-key_start=$(grep -n "BEGIN PRIVATE" /tmp/vst.pem |cut -f 1 -d:)
-key_end=$(grep -n  "END PRIVATE" /tmp/vst.pem |cut -f 1 -d:)
-
-# Adding SSL certificate
-sed -n "1,${crt_end}p" /tmp/vst.pem > $VESTA/ssl/certificate.crt
-sed -n "$key_start,${key_end}p" /tmp/vst.pem > $VESTA/ssl/certificate.key
-chown root:mail $VESTA/ssl/*
-chmod 660 $VESTA/ssl/*
-rm /tmp/vst.pem
+# generating fake SSL cert with openssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout "$VESTA/ssl/certificate.key" \
+  -out "$VESTA/ssl/certificate.crt" \
+  -subj "/C=US/ST=California/L=San Francisco/O=Vesta Control Panel/CN=$(hostname)"
 
 mkdir -p /etc/vesta
 [[ -e /etc/vesta/vesta.conf ]] || cp $VESTA/conf/vesta.conf /etc/vesta/vesta.conf
