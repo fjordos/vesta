@@ -465,7 +465,7 @@ if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
     check_result $? "Can't install RPM Fusion repository"
     dnf install -y "https://rpms.remirepo.net/fedora/remi-release-${release}.rpm"
     check_result $? "Can't install REMI repository"
-    dnf config-manager --set-enabled remi
+    dnf config-manager enable remi
     dnf module reset php
     dnf module enable php:remi-${sysphpv}
 fi
