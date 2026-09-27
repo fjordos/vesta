@@ -511,7 +511,7 @@ if [ "$remi" = 'yes' ] && [ ! -e "/etc/yum.repos.d/remi.repo" ]; then
     check_result $? "Can't install REMI repository"
     dnf -y config-manager enable remi
     dnf -y module reset php
-    dnf -y module enable php:remi-${sysphpv}
+    dnf -y module enable php:remi-"${sysphpv}"
 fi
 
 #----------------------------------------------------------#
@@ -889,7 +889,9 @@ cp -rf $vestacp/letsencrypt/ /etc/letsencrypt
 #----------------------------------------------------------#
 
 if [ "$nginx" = 'yes' ]; then
-    cp -f $vestacp/nginx/*.conf /etc/nginx/conf.d/
+    cp -f $vestacp/nginx/phpMyAdmin.conf /etc/nginx/default.d/phpMyAdmin.conf
+    cp -f $vestacp/nginx/webmail.conf /etc/nginx/default.d/webmail.conf
+    cp -f $vestacp/nginx/status.conf /etc/nginx/conf.d/status.conf
     cp -f $vestacp/logrotate/nginx /etc/logrotate.d/
     touch /etc/nginx/conf.d/vesta.conf
     mkdir -p /var/log/nginx/domains
