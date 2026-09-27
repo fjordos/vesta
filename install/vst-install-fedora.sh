@@ -1166,7 +1166,7 @@ fi
 
 if [ "$dovecot" = 'yes' ]; then
     gpasswd -a dovecot mail
-    cp -rf $vestacp/dovecot /etc/
+    cp -rf $vestacp/dovecot/conf.d /etc/dovecot
     cp -f $vestacp/logrotate/dovecot /etc/logrotate.d/
     chown -R root:root /etc/dovecot*
     systemctl enable --now dovecot
