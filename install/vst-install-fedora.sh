@@ -16,16 +16,67 @@ sysphpv="8.5"
 vesta_version=master
 
 # Defining software pack for all distros
-systemphp="php php-php-bcmath php-php-cli php-php-common php-php-fpm
-    php-php-gd php-php-imap php-php-mbstring php-php-mcrypt
-    php-php-mysqlnd php-php-pdo php-php-pgsql php-php-soap
-    php-php-tidy php-php-xml php-php-pecl-apcu php-php-pecl-imagick
-    php-php-pecl-xmlrpc php-php-pecl-zip php-php-ioncube-loader"
-software="bash-completion bc bind-utils crudini curl e2fsprogs expect flex freetype ftp
-    GeoIP ImageMagick whois libidn lsof git certbot python3-certbot-nginx
-    mc net-tools openssh-clients pcre2 php-cli pwgen rrdtool rsyslog screen
-    sqlite sudo tar telnet unzip vim which zip composer perl-Archive-Zip perl-IO-String"
-software="$software valkey-compat-redis valkey"
+systemphp="
+    composer
+    php
+    php-bcmath
+    php-cli
+    php-common
+    php-fpm
+    php-gd
+    php-imap
+    php-mbstring
+    php-mysqlnd
+    php-pdo
+    php-pgsql
+    php-soap
+    php-tidy
+    php-xml
+    php-pecl-apcu
+    php-pecl-imagick
+    php-pecl-xmlrpc
+    php-pecl-zip
+    php-ioncube-loader
+    "
+software="
+    bash-completion
+    bc
+    bind-utils
+    certbot
+    crudini
+    curl
+    e2fsprogs
+    expect
+    flex
+    ftp
+    GeoIP
+    git
+    ImageMagick
+    libidn
+    lsof
+    mc
+    net-tools
+    openssh-clients
+    pcre2
+    pwgen
+    rrdtool
+    rsyslog
+    rsync
+    screen
+    sqlite
+    sudo
+    tar
+    telnet
+    unzip
+    vim
+    which
+    whois
+    zip
+    "
+software="$software
+    valkey-compat-redis
+    valkey
+    "
     #unbound
 # TODO: softaculous
 
@@ -552,7 +603,7 @@ if [ "$nginx" = 'yes'  ]; then
     software="$software python3-pyparsing"
 fi
 if [ "$apache" = 'yes' ]; then
-    software="$software httpd mod_ssl mod_fcgid"
+    software="$software httpd mod_ssl mod_fcgid python3-certbot-apache"
 fi
 if [ "$phpfpm" = 'yes' ]; then
     software="$software php-fpm"
@@ -576,7 +627,7 @@ if [ "$clamd" = 'yes' ]; then
 fi
 if [ "$spamd" = 'yes' ]; then
     software="$software spamassassin spamassassin-compile spamassassin-dqs spamassassin-iXhash2
-                        perl-IO-String perl-Archive-Zip perl-IO-String perl-Archive-Zip"
+                        perl-IO-String perl-Archive-Zip"
 fi
 if [ "$dovecot" = 'yes' ]; then
     software="$software dovecot dovecot-pigeonhole"
