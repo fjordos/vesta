@@ -536,7 +536,7 @@ cp -r /etc/httpd/* $vst_backups/httpd > /dev/null 2>&1
 cp /etc/php.ini $vst_backups/php > /dev/null 2>&1
 cp -r /etc/php.d  $vst_backups/php > /dev/null 2>&1
 cp /etc/php-fpm.conf $vst_backups/php-fpm > /dev/null 2>&1
-truncate -s0 /etc/php-fpm.d/www.conf /etc/opt/remi/php*/php-fpm.d/www.conf > /dev/null 2>&1
+#truncate -s0 /etc/php-fpm.d/www.conf /etc/opt/remi/php*/php-fpm.d/www.conf > /dev/null 2>&1
 
 # Backup Bind configuration
 dnf -y remove bind-chroot > /dev/null 2>&1
@@ -929,9 +929,9 @@ if [ -z "$ZONE" ]; then
     ZONE='UTC'
 fi
 for pconf in $(find /etc/php* -name php.ini); do
-    php_dir=$(dirname "$pconf")
-    grep -P "^date.timezone" $php_dir/vesta.ini > /dev/null 2>&1 || echo "date.timezone = $ZONE" >> $php_dir/vesta.ini
-    grep -P "^short_open_tag" $php_dir/vesta.ini > /dev/null 2>&1 || echo "short_open_tag = On" >> $php_dir/vesta.ini
+    php_dir=$(dirname "$pconf")/php.d
+    crudini --set "$php_dir/vesta.ini" PHP short_open_tag On
+    crudini --set "$php_dir/vesta.ini" Date date.timezone "$ZONE"
 done
 
 
