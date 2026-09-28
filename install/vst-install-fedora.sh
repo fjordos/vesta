@@ -1353,13 +1353,12 @@ fi
 crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-deploy-hook.sh"
 
 # Starting Vesta service
-cp -f "$vestacp/vesta/vesta.service" /etc/systemd/system/
-cp -f "$vestacp/vesta/vesta-php.service" /etc/systemd/system/
-cp -f "$vestacp/vesta/vesta.php" /etc/vesta/
+cp -f "$vestacp/systemd/system/vesta.service" /etc/systemd/system/
+cp -f "$vestacp/systemd/system/vesta-php.service" /etc/systemd/system/
+cp -f "$vestacp/vesta/*.{conf,php}" /etc/vesta/
 
 systemctl daemon-reload
-systemctl enable vesta vesta-php
-systemctl start vesta vesta-php
+systemctl enable --now vesta vesta-php
 check_result $? "vesta start failed"
 chown admin:admin "$VESTA/data/sessions"
 
