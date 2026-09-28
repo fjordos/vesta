@@ -55,11 +55,11 @@ if [ -z "$DNS_SYSTEM" ] || [ "$DNS_SYSTEM" = 'remote' ] ; then
 fi
 
 # Restart system
-if [ $(systemctl is-active unbound) ] ; then
-   unbound-control reload_keep_cache -q
-else
-    systemctl restart unbound >/dev/null 2>&1
-fi
+#if [ $(systemctl is-active unbound) ] ; then
+#   unbound-control reload_keep_cache -q
+#else
+#    systemctl restart unbound >/dev/null 2>&1
+#fi
 
 systemctl reload $DNS_SYSTEM >/dev/null 2>&1
 if [ $? -ne 0 ]; then
