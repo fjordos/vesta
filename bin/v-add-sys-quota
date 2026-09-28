@@ -23,6 +23,9 @@ quota=$(which --skip-alias --skip-functions xfs_quota 2>/dev/null)
 if [ $? -ne 0 ]; then
     xfs_info $(df -P /home/$user | tail -n 1 | awk '{print $1}') >/dev/null 2>&1
     check_result $? "Only the XFS Quota supported. Please reformat the /home disk with XFS or attach another disk." $E_UPDATE
+    if mount | grep " $(df -P /home | awk '{print $6}' | tail -n1) " | grep gquota,uquota ; then
+      check_result $? "You have to set manually the XFS Quota supported. Please add gquota,uquota option to the /home mount in the /etc/fstab." $E_UPDATE
+    fi
 fi
 
 #----------------------------------------------------------#

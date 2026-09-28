@@ -1206,16 +1206,16 @@ if [ "$exim" = 'yes' ] && [ "$mysql" = 'yes' ]; then
     chmod a+r /etc/roundcubemail/*
     chmod -f 777 /var/log/roundcubemail
     r="$(gen_pass)"
-    mysql -e "CREATE DATABASE roundcube"
-    mysql -e "GRANT ALL ON roundcube.* TO 
+    mariadb -e "CREATE DATABASE roundcube"
+    mariadb -e "GRANT ALL ON roundcube.* TO
             roundcube@localhost IDENTIFIED BY '$r'"
     sed -i "s/%password%/$r/g" /etc/roundcubemail/config.inc.php
     chmod 640 /etc/roundcubemail/config.inc.php
     chown root:apache /etc/roundcubemail/config.inc.php
     if [ -e "/usr/share/roundcubemail/SQL/mysql.initial.sql" ]; then
-        mysql roundcube < /usr/share/roundcubemail/SQL/mysql.initial.sql
+        mariadb roundcube < /usr/share/roundcubemail/SQL/mysql.initial.sql
     else
-        mysql roundcube < /usr/share/doc/roundcubemail-*/SQL/mysql.initial.sql
+        mariadb roundcube < /usr/share/doc/roundcubemail-*/SQL/mysql.initial.sql
     fi
 fi
 
@@ -1326,7 +1326,7 @@ command="sudo $VESTA/bin/v-update-user-stats"
 $VESTA/bin/v-add-cron-job 'admin' '20' '00' '*' '*' '*' "$command"
 command="sudo $VESTA/bin/v-update-sys-rrd"
 $VESTA/bin/v-add-cron-job 'admin' '*/5' '*' '*' '*' '*' "$command"
-service crond restart
+systemctl restart crond
 
 # Building RRD images
 $VESTA/bin/v-update-sys-rrd
@@ -1346,7 +1346,7 @@ crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-depl
 # Starting Vesta service
 cp -f "$vestacp/systemd/system/vesta.service" /etc/systemd/system/
 cp -f "$vestacp/systemd/system/vesta-php.service" /etc/systemd/system/
-cp -f "$vestacp/vesta/" /etc/vesta
+cp -fr "$vestacp/vesta/" /etc/vesta
 
 systemctl daemon-reload
 systemctl enable --now vesta vesta-php
