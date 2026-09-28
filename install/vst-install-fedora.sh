@@ -572,6 +572,8 @@ cp -r /etc/dovecot/* $vst_backups/dovecot > /dev/null 2>&1
 # Backup MySQL/MariaDB configuration and data
 #systemctl stop mysql mysqld mariadb > /dev/null 2>&1
 mv /var/lib/mysql $vst_backups/mysql/mysql_datadir >/dev/null 2>&1
+mkdir /var/lib/mysql
+chown mysql:mysql /var/lib/mysql
 cp /etc/my.cnf $vst_backups/mysql > /dev/null 2>&1
 cp /etc/my.cnf.d $vst_backups/mysql > /dev/null 2>&1
 mv /root/.my.cnf  $vst_backups/mysql > /dev/null 2>&1
