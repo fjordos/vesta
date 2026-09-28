@@ -1141,7 +1141,7 @@ if [ "$exim" = 'yes' ]; then
 
     rm -f /etc/alternatives/mta
     ln -s /usr/sbin/sendmail.exim /etc/alternatives/mta
-    systemctl disable --nw sendmail 2>/dev/null
+    systemctl disable --now sendmail 2>/dev/null
     systemctl disable --now postfix 2>/dev/null
 
     firewall-cmd --permanent --add-service=smtp
