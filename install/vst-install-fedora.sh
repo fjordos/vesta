@@ -865,9 +865,6 @@ crudini --set /etc/vesta/vesta.conf DEFAULT VESTA "$VESTA"
 crudini --set /etc/vesta/vesta.conf DEFAULT VESTA_PORT "$port"
 crudini --set /etc/vesta/vesta.conf DEFAULT TIMEZONE "$(timedatectl 2>/dev/null | grep "Time zone: " | awk '{print $3}')"
 crudini --set /etc/vesta/vesta.conf DEFAULT HOSTNAME "$(hostname)"
-crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_SECURITY_DISABLED 0
-crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_FULL 0
-crudini --set /etc/vesta/vesta.conf DEFAULT UPGRADE_SKIP_UNAVAILABLE 0
 
 #----------------------------------------------------------#
 #                     Configure Letsencrypt                #
@@ -1371,6 +1368,10 @@ $VESTA/upd/add_notifications.sh
 
 # Adding cronjob for autoupdates
 cp -f "$vestacp/systemd/system/dnf5-automatic.service.d/" /etc/systemd/system/dnf5-automatic.service.d
+crudini --set /etc/dnf/automatic.conf commands apply_updates yes
+crudini --set /etc/dnf/automatic.conf commands download_updates yes
+crudini --set /etc/dnf/automatic.conf commands upgrade_type security
+crudini --set /etc/dnf/automatic.conf commands reboot never
 $VESTA/bin/v-add-cron-vesta-autoupdate
 
 $VESTA/bin/v-change-vesta-port "$port"
