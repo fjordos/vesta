@@ -1073,20 +1073,26 @@ if [ -e "/usr/bin/valkey-cli" ]; then
     touch /etc/valkey/users.acl
     
     # Additional security settings
-    echo "protected-mode yes" >> /etc/valkey/valkey.conf
-    echo "timeout 300" >> /etc/valkey/valkey.conf
-    
+    echo "protected-mode yes" > /etc/valkey/module/vesta.conf
+    echo "timeout 300" >> /etc/valkey/module/vesta.conf
+    echo "requirepass $valkey_auth_pass" > /etc/valkey/module/password.conf
+
     # Enable and start Valkey
     systemctl enable --now valkey
     check_result $? "valkey start failed"
-    
+
+    export VALKEYCLI_AUTH="$valkey_auth_pass"
+
     # Create valkey default user's password
     valkey-cli ACL SETUSER default on ">${valkey_auth_pass}" "~*" "&*" "+@all"
     valkey-cli ACL SAVE
     echo "VALKEY_AUTH_PASSWORD='$valkey_auth_pass'" >> $VESTA/conf/vesta.conf
     chmod 600 $VESTA/conf/vesta.conf
-    
-    echo "Valkey configured with AUTH password: $valkey_auth_pass"
+
+    rm -f /etc/valkey/module/password.conf
+    systemctl restart valkey
+    valkey-cli ACL LIST 2> /dev/null
+    check_result $? "valkey ACL check failed"
 fi
 
 
