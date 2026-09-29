@@ -1440,6 +1440,9 @@ fi
 # Active the Firewalld configuration
 firewall-cmd --reload
 
+# The first running of update script
+$VESTA/bin/v-update-sys-vesta
+
 # Sending notification to admin email
 echo -e "Congratulations, you have just successfully installed \
 Vesta Control Panel
