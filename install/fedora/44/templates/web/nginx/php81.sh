@@ -20,7 +20,11 @@ if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; th
     fi
   done
 fi
-cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf" << EOF
+
+if [[ "$REMOVE" == 1 ]] ; then
+  rm -f "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf"
+else
+  cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf" << EOF
 [${user}@${domain}]
 user = $user
 group = $user
@@ -46,6 +50,7 @@ php_value[memory_limit] = 512M
 php_value[post_max_size] = 64M
 php_value[upload_max_filesize] = 64M
 EOF
+fi
 
 systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 

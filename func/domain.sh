@@ -294,6 +294,19 @@ del_web_config() {
             sed -i "$top_line,$bottom_line d" $conf
         fi
     fi
+
+    if [[ "$2" =~ stpl$ ]]; then
+        trigger="${2/%.stpl/.sh}"
+    else
+        trigger="${2/%.tpl/.sh}"
+    fi
+
+    if [ -x "$WEBTPL/$1/$WEB_BACKEND/$trigger" ]; then
+        REMOVE=1 $WEBTPL/$1/$WEB_BACKEND/$trigger \
+            $user $domain $local_ip $HOMEDIR \
+            $HOMEDIR/$user/web/$domain/public_html
+    fi
+
     # clean-up for both config styles if there is no more domains
     web_domain=$(grep DOMAIN $USER_DATA/web.conf |wc -l)
     if [ "$web_domain" -eq '0' ]; then
