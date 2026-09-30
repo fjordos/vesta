@@ -548,8 +548,7 @@ rebuild_mysql_database() {
             # mysql >= 5.7
             mysql_query "CREATE USER IF NOT EXISTS \`$DBUSER\`" > /dev/null
             mysql_query "CREATE USER IF NOT EXISTS \`$DBUSER\`@localhost" > /dev/null
-            query="UPDATE mysql.user SET authentication_string='$MD5'"
-            query="$query WHERE User='$DBUSER'"
+            query="SET PASSWORD for $DBUSER@localhost = '$MD5'"
         else
             # mysql < 5.7
             query="UPDATE mysql.user SET Password='$MD5' WHERE User='$DBUSER'"
@@ -566,7 +565,7 @@ rebuild_mysql_database() {
             mysql_query "CREATE USER IF NOT EXISTS \`$DBUSER\`@localhost" > /dev/null
         fi
         # mariadb any version
-        query="UPDATE mysql.user SET Password='$MD5' WHERE User='$DBUSER'"
+        query="SET PASSWORD for $DBUSER@localhost = '$MD5'"
     fi
     mysql_query "GRANT ALL ON \`$DB\`.* TO \`$DBUSER\`@\`%\`" >/dev/null
     mysql_query "GRANT ALL ON \`$DB\`.* TO \`$DBUSER\`@localhost" >/dev/null
