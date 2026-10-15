@@ -14,6 +14,8 @@
         AllowOverride All
         SSLRequireSSL
         Options +Includes -Indexes -ExecCGI
+        DirectoryIndex index.php index.html
+        Require all granted
     </Directory>
     <Directory %home%/%user%/web/%domain%/stats>
         AllowOverride All

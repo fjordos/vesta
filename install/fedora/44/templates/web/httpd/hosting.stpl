@@ -15,6 +15,8 @@
         AllowOverride All
         SSLRequireSSL
         Options +Includes -Indexes +ExecCGI
+        DirectoryIndex index.php index.html
+        Require all granted
         <IfModule mod_php.c>
             php_admin_value upload_max_filesize 10M
             php_admin_value max_execution_time 20
