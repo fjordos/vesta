@@ -1131,6 +1131,8 @@ if [ "$exim" = 'yes' ]; then
     cp -f $vestacp/exim/limit.conf /etc/exim/
     touch /etc/exim/white-blocks.conf
     pwgen 24 1 > /etc/exim/srs.conf
+    echo "127.0.0.1" > /etc/exim/relay_from_hosts.conf
+    echo "::1" >> /etc/exim/relay_from_hosts.conf
     chmod 640 /etc/exim/*.conf
     chown root:exim /etc/exim/*.conf
 
@@ -1347,7 +1349,7 @@ if [ "$softaculous" = 'yes' ]; then
     $VESTA/bin/v-add-vesta-softaculous
 fi
 
-crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-deploy-hook.sh"
+crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
 
 # Starting Vesta service
 cp -f "$vestacp/systemd/system/vesta.service" /etc/systemd/system/

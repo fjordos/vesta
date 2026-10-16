@@ -1418,7 +1418,7 @@ if [ "$softaculous" = 'yes' ]; then
     $VESTA/bin/v-add-vesta-softaculous
 fi
 
-crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK "$VESTA/func/certbot-deploy-hook.sh"
+crudini --set /etc/sysconfig/certbot DEFAULT POST_HOOK /etc/letsencrypt/renewal-hooks/deploy/certbot-deploy-hook.sh
 
 # Starting Vesta service
 cp-f "$vestacp/vesta/vesta.service" /etc/systemd/system/
