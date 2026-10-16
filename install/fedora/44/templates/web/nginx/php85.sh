@@ -28,8 +28,6 @@ else
 [${user}@${domain}]
 user = $user
 group = $user
-listen.owner = $user
-listen.group = $user
 listen = /home/$user/web/$domain/php.socket
 listen.acl_users = nginx,apache
 listen.acl_groups = $user
@@ -38,6 +36,7 @@ pm.max_children = 50
 pm.start_servers = 5
 pm.min_spare_servers = 5
 pm.max_spare_servers = 35
+pm.max_requests = 500
 security.limit_extensions = .php
 php_admin_flag[log_errors] = on
 ;php_flag[display_errors] = on
