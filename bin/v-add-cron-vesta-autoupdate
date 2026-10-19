@@ -10,7 +10,7 @@
 #----------------------------------------------------------#
 
 # Argument definition
-user=admin
+#user="user"
 
 # Includes
 source $VESTA/func/main.sh
@@ -65,6 +65,9 @@ fi
 # Sync cronjobs with system crond
 sync_cron_jobs
 
+# Just for sure
+crudini --set /etc/dnf/automatic.conf commands apply_updates yes
+
 systemctl enable dnf-automatic.timer
 systemctl start dnf-automatic.timer
 
@@ -76,7 +79,7 @@ systemctl start dnf-automatic.timer
 #increase_user_value $user '$U_CRON_JOBS'
 
 # Logging
-log_history "added cron job $job"
+log_history "Enabled the DNF and Vesta updates"
 log_event "$OK" "$ARGUMENTS"
 
 exit
