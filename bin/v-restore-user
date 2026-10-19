@@ -410,7 +410,7 @@ if [ "$web" != 'no' ] && [ ! -z "$WEB_SYSTEM" ]; then
         chown $user $tmpdir
         chmod u+w $HOMEDIR/$user/web/$domain
         sudo -u $user tar -xzpf $tmpdir/web/$domain/domain_data.tar.gz \
-            -C $HOMEDIR/$user/web/$domain/ --exclude=./logs/* \
+            -C $HOMEDIR/$user/web/$domain/ --exclude="./logs/*" \
             2> $HOMEDIR/$user/web/$domain/restore_errors.log
         if [ -e "$HOMEDIR/$user/web/$domain/restore_errors.log" ]; then
             chown $user:$user $HOMEDIR/$user/web/$domain/restore_errors.log
@@ -687,7 +687,7 @@ if [ "$db" != 'no' ] && [ ! -z "$DB_SYSTEM" ]; then
 fi
 
 # Restoring cron jobs
-if [ "$cron" != 'no' ] && [ ! -z "CRON_SYSTEM" ]; then
+if [ "$cron" != 'no' ] && [ -n "$CRON_SYSTEM" ]; then
     echo -e  "\n-- CRON --" |tee -a $tmpdir/restore.log
 
     # Unpacking cron container
