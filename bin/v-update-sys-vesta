@@ -5,6 +5,7 @@
 # The function runs as rpm update trigger. It pulls shell script from vesta
 # server and runs it.
 
+[[ "$DEBUG" ]] && set -x
 
 #----------------------------------------------------------#
 #                    Variable&Function                     #
@@ -25,7 +26,7 @@ VERSION="${1:-$VERSION}"
 #----------------------------------------------------------#
 
 # Checking version
-pushd "$VESTA"
+pushd "$VESTA" || exit 1
   git branch --remotes --list | grep -q "origin/$VERSION"
 popd >/dev/null || { echo "Error: Requested $VERSION version is not valid"; exit 1; }
 
@@ -33,7 +34,7 @@ popd >/dev/null || { echo "Error: Requested $VERSION version is not valid"; exit
 #                       Action                             #
 #----------------------------------------------------------#
 
-pushd "$VESTA"
+pushd "$VESTA" || exit 1
   git pull origin "$VERSION" --rebase
 popd 2>&1 | logger >/dev/null || { echo "Error: Failed to pull $VERSION version"; exit 1; }
 
