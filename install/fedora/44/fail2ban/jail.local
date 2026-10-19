@@ -2,7 +2,7 @@
 bantime = 1h
 maxretry = 3
 
-[ssh]
+[sshd]
 enabled  = true
 
 [exim-spam]
@@ -13,7 +13,6 @@ enabled = true
 
 [dovecot]
 enabled = true
-logpath = /var/log/dovecot.log
 
 [vsftpd]
 enabled  = false
