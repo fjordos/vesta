@@ -37,6 +37,7 @@ pm.start_servers = 5
 pm.min_spare_servers = 5
 pm.max_spare_servers = 35
 pm.max_requests = 500
+request_terminate_timeout = 30s
 security.limit_extensions = .php
 php_admin_flag[log_errors] = on
 ;php_flag[display_errors] = on
