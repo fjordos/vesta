@@ -429,7 +429,7 @@ if [ "$web" != 'no' ] && [ ! -z "$WEB_SYSTEM" ]; then
 
         # Re-chowning files if uid differs
         if [ "$old_uid" -ne "$new_uid" ]; then
-            find $HOMEDIR/$user/web/$domain/ -user $old_uid \
+            find $HOMEDIR/$user/web/$domain/ -not -user $user \
                 -exec chown -h $user:$user {} \;
         fi
     done
@@ -612,10 +612,8 @@ if [ "$mail" != 'no' ] && [ ! -z "$MAIL_SYSTEM" ]; then
             fi
 
             # Re-chowning files if uid differs
-            if [ "$old_uid" -ne "$new_uid" ]; then
-                find $HOMEDIR/$user/mail/$domain_idn -user $old_uid \
+            find $HOMEDIR/$user/mail/$domain_idn -not -user $user \
                     -exec chown -h $user:mail {} \;
-            fi
         fi
 
         # Chowning mail conf files to exim user
