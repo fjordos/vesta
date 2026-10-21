@@ -409,7 +409,7 @@ if [ "$web" != 'no' ] && [ ! -z "$WEB_SYSTEM" ]; then
         # Restoring web domain data
         chown $user $tmpdir
         chmod u+w $HOMEDIR/$user/web/$domain
-        sudo -u $user tar -xzpf $tmpdir/web/$domain/domain_data.tar.gz \
+        tar -xzpf $tmpdir/web/$domain/domain_data.tar.gz \
             -C $HOMEDIR/$user/web/$domain/ --exclude="./logs/*" \
             2> $HOMEDIR/$user/web/$domain/restore_errors.log
         if [ -e "$HOMEDIR/$user/web/$domain/restore_errors.log" ]; then
@@ -601,7 +601,7 @@ if [ "$mail" != 'no' ] && [ ! -z "$MAIL_SYSTEM" ]; then
         if [ -e "$tmpdir/mail/$domain/accounts.tar.gz" ]; then
             chown $user $tmpdir
             chmod u+w $HOMEDIR/$user/mail/$domain_idn
-            sudo -u $user tar -xzpf $tmpdir/mail/$domain/accounts.tar.gz \
+            tar -xzpf $tmpdir/mail/$domain/accounts.tar.gz \
                 -C $HOMEDIR/$user/mail/$domain_idn/
             if [ "$?" -ne 0 ]; then
                 rm -rf $tmpdir
