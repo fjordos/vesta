@@ -636,7 +636,7 @@ if [ "$postgresql" = 'yes' ]; then
     # TODO: replace phpPgAdmin
 fi
 if [ "$fail2ban" = 'yes' ]; then
-    software="$software fail2ban"
+    software="$software fail2ban fail2ban-firewalld fail2ban-systemd"
 fi
 
 
