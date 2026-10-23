@@ -616,7 +616,7 @@ fi
 if [ "$exim" = 'yes' ]; then
     software="$software exim roundcubemail"
     # TODO: change to postfix is in progress
-    software="$software postfix"
+    # software="$software postfix"
 fi
 if [ "$clamd" = 'yes' ]; then
     software="$software clamd clamav clamav-milter exim-clamav clamav-freshclam"
