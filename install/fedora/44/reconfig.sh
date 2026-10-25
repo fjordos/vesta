@@ -35,4 +35,13 @@ fi
 
 /bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/$ID/$VERSION_ID/templates/" "${VESTA}/data/templates"
 
+# Update CloudFlare IPs
+echo '# Cloudflare https://www.cloudflare.com/ips' > /etc/nginx/conf.d/cloudflare.conf
+for I in https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ ; do
+  /bin/curl -s "${I}" | \
+    awk '{print "set_real_ip_from " $1 ";"}' >> /etc/nginx/conf.d/cloudflare.conf
+    echo >> /etc/nginx/conf.d/cloudflare.conf
+done
+echo "real_ip_header CF-Connecting-IP;" >> /etc/nginx/conf.d/cloudflare.conf
+
 # TODO: Sync Vesta config system files and reload if changes were made
