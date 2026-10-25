@@ -46,4 +46,6 @@ echo "real_ip_header CF-Connecting-IP;" >> /etc/nginx/conf.d/cloudflare.conf
 
 # secfix
 for I in /etc $(find /etc/opt/remi/ -mindepth 1 -maxdepth 1 -type d) ; do echo "session.upload_progress.enabled=0" > "$I/php.d/secfix-CVE-2026-109619.ini" ; done
+systemctl restart "php*"
+
 # TODO: Sync Vesta config system files and reload if changes were made
