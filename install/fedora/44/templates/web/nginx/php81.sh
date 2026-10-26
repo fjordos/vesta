@@ -47,8 +47,8 @@ php_value[session.save_path]    = $home_dir/$user/tmp
 php_value[soap.wsdl_cache_dir]  = $home_dir/$user/tmp
 php_value[opcache.file_cache]   = $home_dir/$user/tmp
 php_value[memory_limit] = 512M
-php_value[post_max_size] = 64M
-php_value[upload_max_filesize] = 64M
+php_value[post_max_size] = 256M
+php_value[upload_max_filesize] = 256M
 EOF
 fi
 
