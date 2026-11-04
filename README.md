@@ -8,7 +8,8 @@ Vesta is back under active development as of 25 February 2024. We are commited t
 * Vesta is an open source hosting control panel.
 * Vesta has a clean and focused interface without the clutter.
 * Vesta has the latest of very innovative technologies.
-* FjordOS started to support it, and temporary it's supported on CentOS Stream 10 and RHEL 10, and actual Fedora by this "fork".
+* FjordOS started to support this VestaCP fork
+* it is partially supported on CentOS Stream 10 and RHEL 10 and developed on the actual Fedora by this "fork".
 
 How to install (2 step)
 ----------------------------
