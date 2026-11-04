@@ -207,7 +207,7 @@ while getopts "a:n:w:v:j:k:m:g:x:z:c:t:i:b:r:o:q:l:y:s:u:e:d:p:fh" Option; do
         k) named=$OPTARG ;;             # Named
         m) mysql=$OPTARG ;;             # MySQL
         g) postgresql=$OPTARG ;;        # PostgreSQL
-        d) mongodb=$OPTARG ;;           # MongoDB (unsupported)
+        #d) mongodb=$OPTARG ;;           # MongoDB (unsupported)
         x) exim=$OPTARG ;;              # Exim
         z) dovecot=$OPTARG ;;           # Dovecot
         c) clamd=$OPTARG ;;             # ClamAV
