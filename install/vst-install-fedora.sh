@@ -135,7 +135,13 @@ set_default_value() {
     if [ -z "$variable" ]; then
         eval $1=$2
     fi
-    if [ "$variable" != 'yes' ] && [ "$variable" != 'no' ]; then
+    if [ "$variable" = "True" ]; then
+            eval $1="yes"
+    fi
+    if [ "$variable" = "False" ]; then
+            eval $1="no"
+    fi
+    if [ "$variable" != 'yes' ]  && [ "$variable" != 'no' ] && [ "$variable" != 'True' ] && [ "$variable" != 'False' ]; then
         eval $1=$2
     fi
 }
