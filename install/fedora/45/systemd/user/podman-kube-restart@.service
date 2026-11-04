@@ -1,0 +1,6 @@
+[Unit]
+Description=Just restart an user's podman-kube service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/systemctl condrestart --user podman-kube@%i.service

@@ -1,0 +1,29 @@
+[DEFAULT]
+bantime = 1h
+maxretry = 3
+
+[sshd]
+enabled  = true
+
+[exim-spam]
+enabled = true
+
+[exim]
+enabled = true
+
+[dovecot]
+enabled = true
+
+[vsftpd]
+enabled  = false
+
+[proftpd]
+enabled  = false
+
+[mysqld-auth]
+enabled  = false
+
+[vesta]
+enabled = true
+filter  = vesta
+logpath = /var/log/vesta/auth.log

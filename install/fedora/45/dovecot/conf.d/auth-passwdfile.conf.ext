@@ -1,0 +1,18 @@
+passdb passwd {
+  driver = passwd-file
+  auth_username_format = %{user | username}
+  passwd_file_path = /etc/exim/domains/%{user | domain}/passwd
+  auth_allow_weak_schemes = yes
+}
+
+userdb passwd {
+  driver = passwd-file
+  auth_username_format = %{user | username}
+  passwd_file_path = /etc/exim/domains/%{user | domain}/passwd
+  fields {
+#    mail_location = maildir:~/mail/%{user | domain}/%{user | username}
+    mail_driver = mdbox
+    mail_path = ~/mail/%{user | domain}/%{user | username}
+    gid = dovenull
+  }
+}
