@@ -69,7 +69,7 @@ if [ -e '/usr/bin/wget' ]; then
     fi
 # Check curl
 elif [ -e '/usr/bin/curl' ]; then
-    if curl -O "${URL}"/vst-install-"$type".sh ; then
+    if curl -L -O "${URL}"/vst-install-"$type".sh ; then
         bash "vst-install-${type}.sh" $*
     else
         echo "Error: vst-install-$type.sh download failed."
