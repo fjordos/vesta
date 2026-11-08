@@ -21,7 +21,7 @@
         AllowOverride All
     </Directory>
 
-    ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php.socket|fcgi://localhost/%sdocroot%/ enablereuse=on
+    ProxyPassMatch ^/(.*\.php(/.*)?)$ unix:%home%/%user%/web/%domain%/php/www.sock|fcgi://localhost/var/www/html/ enablereuse=on
 
     SSLEngine on
     SSLVerifyClient none

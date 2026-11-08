@@ -33,6 +33,7 @@ if [ ! -e "/etc/cockpit/ws-certs.d/000-default.cert" ] || [ ! -e "/etc/cockpit/w
   systemctl restart cockpit.socket
 fi
 
+/bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/$ID/$VERSION_ID/vesta/php/" "/etc/vesta/php"
 /bin/rsync ${DEBUG:+-v} -aH "${VESTA}/install/$ID/$VERSION_ID/templates/" "${VESTA}/data/templates"
 
 # Update CloudFlare IPs
