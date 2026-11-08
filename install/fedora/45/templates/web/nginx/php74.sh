@@ -6,9 +6,10 @@ home_dir="$4"
 docroot="$5"
 
 chmod 751 "$docroot"
-mkdir -p "$home_dir/$user/web/$domain/{tmp,php}"
-chmod 0700  "$home_dir/$user/web/$domain/tmp"
-chown "$user":"$user" "$home_dir/$user/web/$domain/{tmp,php}"
+mkdir -p "$home_dir/$user/web/$domain/php"
+mkdir -p /home/lonyai/web/php74.lonyai.com/tmp/{opcache,peclxml,session,wsdlcache}
+chmod 0700 "$home_dir/$user/web/$domain/tmp"
+chown -R "$user":"$user" "$home_dir/$user/web/$domain/{tmp,php}"
 
 phpv=74
 if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
