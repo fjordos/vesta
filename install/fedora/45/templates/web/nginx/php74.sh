@@ -6,9 +6,9 @@ home_dir="$4"
 docroot="$5"
 
 chmod 751 "$docroot"
-mkdir -p "$home_dir/$user/web/$domain/{tmp,"
+mkdir -p "$home_dir/$user/web/$domain/{tmp,php}"
 chmod 0700  "$home_dir/$user/web/$domain/tmp"
-chown "$user":"$user" "$home_dir/$user/web/$domain/tmp"
+chown "$user":"$user" "$home_dir/$user/web/$domain/{tmp,php}"
 
 phpv=74
 if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
@@ -55,19 +55,24 @@ fi
 systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 
 if [[ "$REMOVE" == 1 ]] ; then
-  systemctl disable --now "${user}-${domain}"-php.service
-  rm -f /etc/containers/systemd/"${user}-${domain}"-php.container
+  systemctl disable --now "${user}-${domain}-php.service"
+  rm -f /etc/containers/systemd/"${user}-${domain}-php.container"
   systemctl daemon-reload
 else
-  cat > /etc/containers/systemd/"${user}-${domain}"-php.container << EOF
+  if [ ! -e "$home_dir/$user/conf/${domain}-php.ini" ]; then
+    touch "$home_dir/$user/conf/${domain}-php.ini"
+    chown "${user}":"${user}" "$home_dir/$user/conf/${domain}-php.ini"
+  fi
+  [[ -e $home_dir/$user/conf/${domain}-php-env.ini ]] && EnvironmentFile="$home_dir/$user/conf/${domain}-php-env.ini"
+  cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}
-Requires=php74-php-fpm-image.service
+Requires=php${phpv}-php-fpm-image.service
 Wants=network-online.target
-After=network-online.target php74-php-fpm-image.service
+After=network-online.target php${phpv}-php-fpm-image.service
 
 [Container]
-Image=ghcr.io/fjordos/simple/php74-php-fpm:latest
+Image=ghcr.io/fjordos/simple/php${phpv}-php-fpm:latest
 ContainerName=${domain}
 HostName=${domain}
 User=${user}
@@ -76,10 +81,10 @@ UserNS=keep-id
 DNS=9.9.9.9
 DNS=1.1.1.1
 DNS=8.8.8.8
-EnvironmentFile=-$home_dir/$user/conf/${domain}-php${phpv}.ini
-Volume=/usr/local/vesta/install/fedora/45/vesta/php/php47.ini:/etc/php.d/vesta.ini:ro,Z
-Volume=/usr/local/vesta/install/fedora/45/vesta/php/php47-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
-Volume=$home_dir/$user/conf/php-${domain}.ini:/etc/php.d/ZZ-custom.ini:ro,Z
+${EnvironmentFile:+EnvironmentFile=$home_dir/$user/conf/${domain}-php-env.ini}
+Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
+Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
+Volume=$home_dir/$user/conf/${domain}-php.ini:/etc/php.d/ZZ-custom.ini:ro,Z
 Volume=$home_dir/$user/web/${domain}/public_html:/var/www/html:rw,Z
 Volume=$home_dir/$user/web/${domain}/php:/run/php-fpm:rw,Z
 Volume=var-lib-php-${user}-${domain}:/var/lib/php
@@ -89,7 +94,7 @@ HealthTimeout=3s
 HealthRetries=3
 HealthStartPeriod=30s
 HealthStartupCmd=/bin/sh -c 'test -S /run/php-fpm/www.sock'
-HealthStartupInterval=5
+HealthStartupInterval=5s
 HealthStartupRetries=10
 HealthStartupSuccess=2
 HealthStartupTimeout=1m33s
@@ -108,7 +113,7 @@ RestartSec=10s
 WantedBy=default.target
 EOF
   systemctl daemon-reload
-  systemctl enable --now "${user}-${domain}"-php.service
+  systemctl start "${user}-${domain}-php.service"
 fi
 
 exit 0
