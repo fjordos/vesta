@@ -5,8 +5,8 @@ domain="$2"
 home_dir="$4"
 docroot="$5"
 
-chmod 751 "$docroot"
 mkdir -p "$home_dir/$user/web/$domain/php"
+chmod 751 "$docroot" "$home_dir/$user/web/$domain/php"
 mkdir -p "$home_dir/$user/web/$domain/tmp/"{opcache,peclxml,session,wsdlcache}
 chmod 0700 "$home_dir/$user/web/$domain/tmp"
 chown -R "$user":"$user" "$home_dir/$user/web/$domain/"{tmp,php}
