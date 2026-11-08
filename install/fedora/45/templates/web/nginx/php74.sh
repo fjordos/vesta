@@ -60,11 +60,14 @@ if [[ "$REMOVE" == 1 ]] ; then
     /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
   systemctl daemon-reload
 else
-  if [ ! -e "$home_dir/$user/conf/${domain}-php.ini" ]; then
-    touch "$home_dir/$user/conf/${domain}-php.ini"
-    chown "${user}":"${user}" "$home_dir/$user/conf/${domain}-php.ini"
+  if [ ! -e "$home_dir/$user/${domain}-php.ini" ]; then
+    echo ";Custom php.ini file for ${domain}. Add own custom PHP settings here." >  "$home_dir/$user/${domain}-php.ini"
+    chown "${user}":"${user}" "$home_dir/$user/${domain}-php.ini"
   fi
-  [[ -e $home_dir/$user/conf/${domain}-php-env.ini ]] && EnvironmentFile="$home_dir/$user/conf/${domain}-php-env.ini"
+  if [[ ! -e $home_dir/$user/${domain}-php.env ]] ; then
+    echo "#Custom .env file for ${domain}. Add own custom environment variables here." > "$home_dir/$user/${domain}-php.env"
+    chown "${user}":"${user}" "$home_dir/$user/${domain}-php.env"
+  fi
   cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}
@@ -82,10 +85,10 @@ UserNS=keep-id
 DNS=9.9.9.9
 DNS=1.1.1.1
 DNS=8.8.8.8
-${EnvironmentFile:+EnvironmentFile=$home_dir/$user/conf/${domain}-php-env.ini}
+EnvironmentFile=$home_dir/$user/${domain}-php.env
 Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
 Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
-Volume=$home_dir/$user/conf/${domain}-php.ini:/etc/php.d/ZZ-custom.ini:ro,Z
+Volume=$home_dir/$user/${domain}-php.ini:/etc/php.d/ZZ-custom.ini:ro,Z
 Volume=$home_dir/$user/web/${domain}/public_html:/var/www/html:rw,Z
 Volume=$home_dir/$user/web/${domain}/php:/run/php-fpm:rw,Z
 Volume=var-lib-php-${user}-${domain}:/var/lib/php
