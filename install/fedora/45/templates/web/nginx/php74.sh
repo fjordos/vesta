@@ -115,7 +115,7 @@ RestartSec=10s
 [Install]
 WantedBy=default.target
 EOF
-  [[ -l /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service" ]] || \
+  [[ -L /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service" ]] || \
     ln -s /etc/systemd/system/"${user}-${domain}-php.service" /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
   systemctl daemon-reload
   systemctl restart "${user}-${domain}-php.service"
