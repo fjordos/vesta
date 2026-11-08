@@ -6,9 +6,10 @@ home_dir="$4"
 docroot="$5"
 
 chmod 751 "$docroot"
-mkdir -p "$home_dir/$user/web/$domain/{tmp,php}"
-chmod 0700  "$home_dir/$user/web/$domain/tmp"
-chown "$user":"$user" "$home_dir/$user/web/$domain/{tmp,php}"
+mkdir -p "$home_dir/$user/web/$domain/php"
+mkdir -p "$home_dir/$user/web/$domain/tmp/{opcache,peclxml,session,wsdlcache}"
+chmod 0700 "$home_dir/$user/web/$domain/tmp"
+chown -R "$user":"$user" "$home_dir/$user/web/$domain/{tmp,php}"
 
 phpv=74
 if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
@@ -79,7 +80,7 @@ After=network-online.target php${phpv}-php-fpm-image.service
 
 [Container]
 Image=ghcr.io/fjordos/simple/php${phpv}-php-fpm:latest
-ContainerName=${domain}
+ContainerName=${user}-${domain}-php
 HostName=${domain}
 User=${userid}
 Group=${groupid}
@@ -88,12 +89,12 @@ DNS=9.9.9.9
 DNS=1.1.1.1
 DNS=8.8.8.8
 EnvironmentFile=$home_dir/$user/${domain}-php.env
-Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
-Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
+Volume=/usr/local/vesta/install/fedora/44/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
+Volume=/usr/local/vesta/install/fedora/44/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
 Volume=$home_dir/$user/${domain}-php.ini:/etc/php.d/ZZ-custom.ini:ro,Z
 Volume=$home_dir/$user/web/${domain}/public_html:/var/www/html:rw,Z
 Volume=$home_dir/$user/web/${domain}/php:/run/php-fpm:rw,Z
-Volume=var-lib-php-${user}-${domain}:/var/lib/php
+Volume=$home_dir/$user/web/${domain}/tmp:/var/lib/php
 HealthCmd=/bin/sh -c 'test -S /run/php-fpm/www.sock'
 HealthInterval=60s
 HealthTimeout=3s
