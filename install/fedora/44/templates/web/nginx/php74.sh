@@ -68,6 +68,8 @@ else
     echo "#Custom .env file for ${domain}. Add own custom environment variables here." > "$home_dir/$user/${domain}-php.env"
     chown "${user}":"${user}" "$home_dir/$user/${domain}-php.env"
   fi
+  userid=$(id -u "${user}")
+  groupid=$(id -g "${user}")
   cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}
@@ -79,8 +81,8 @@ After=network-online.target php${phpv}-php-fpm-image.service
 Image=ghcr.io/fjordos/simple/php${phpv}-php-fpm:latest
 ContainerName=${domain}
 HostName=${domain}
-User=${user}
-Group=${user}
+User=${userid}
+Group=${groupid}
 UserNS=keep-id
 DNS=9.9.9.9
 DNS=1.1.1.1
