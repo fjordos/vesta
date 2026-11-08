@@ -55,8 +55,9 @@ fi
 systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 
 if [[ "$REMOVE" == 1 ]] ; then
-  systemctl disable --now "${user}-${domain}-php.service"
-  rm -f /etc/containers/systemd/"${user}-${domain}-php.container"
+  systemctl stop "${user}-${domain}-php.service"
+  rm -f /etc/containers/systemd/"${user}-${domain}-php.container" \
+    /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
   systemctl daemon-reload
 else
   if [ ! -e "$home_dir/$user/conf/${domain}-php.ini" ]; then
