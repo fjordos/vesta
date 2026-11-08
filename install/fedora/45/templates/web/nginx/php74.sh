@@ -97,8 +97,7 @@ HealthStartupCmd=/bin/sh -c 'test -S /run/php-fpm/www.sock'
 HealthStartupInterval=5s
 HealthStartupRetries=10
 HealthStartupSuccess=2
-HealthStartupTimeout=1m33s
-HealthTimeout=20s
+HealthStartupTimeout=1m30s
 Network=private
 StopTimeout=30
 RunInit=true
@@ -112,8 +111,10 @@ RestartSec=10s
 [Install]
 WantedBy=default.target
 EOF
+  [[ -f /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service" ]] || \
+    ln -s /etc/systemd/system/"${user}-${domain}-php.service" /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
   systemctl daemon-reload
-  systemctl start "${user}-${domain}-php.service"
+  systemctl restart "${user}-${domain}-php.service"
 fi
 
 exit 0
