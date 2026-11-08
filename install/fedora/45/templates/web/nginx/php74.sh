@@ -119,7 +119,7 @@ RestartSec=10s
 WantedBy=default.target
 EOF
   [[ -L /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service" ]] || \
-    ln -s /etc/systemd/system/"${user}-${domain}-php.service" /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
+    ln -s /run/systemd/generator/"${user}-${domain}-php.service" /etc/systemd/system/multi-user.target.wants/"${user}-${domain}-php.service"
   systemctl daemon-reload
   systemctl restart "${user}-${domain}-php.service"
 fi
