@@ -74,9 +74,8 @@ else
   cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}
-Requires=php${phpv}-php-fpm-image.service
 Wants=network-online.target
-After=network-online.target php${phpv}-php-fpm-image.service
+After=network-online.target
 
 [Container]
 Image=ghcr.io/fjordos/simple/php${phpv}-php-fpm:latest
