@@ -11,6 +11,9 @@ mkdir -p "$home_dir/$user/web/$domain/tmp/"{opcache,peclxml,session,wsdlcache}
 chmod 0700 "$home_dir/$user/web/$domain/tmp"
 chown -R "$user":"$user" "$home_dir/$user/web/$domain/"{tmp,php}
 
+userid=$(id -u "${user}")
+groupid=$(id -g "${user}")
+
 phpv=74
 if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
   oldphpvs="$(ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" | awk -F'/' '{print $5}')"
@@ -24,14 +27,15 @@ fi
 
 if [[ "$REMOVE" == 1 ]] ; then
   rm -f "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf"
+  rm -f "/etc/vesta/php$phpv-fpm.d/${user}@${domain}.conf"
 else
-  cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf" << EOF
+  cat > "/etc/vesta/php$phpv-fpm.d/${user}@${domain}.conf" << EOF
 [${user}@${domain}]
-user = $user
-group = $user
+user = $userid
+group = $groupid
 listen = /home/$user/web/$domain/php.socket
 listen.acl_users = nginx,apache
-listen.acl_groups = $user
+listen.acl_groups = $groupid
 pm = dynamic
 pm.max_children = 50
 pm.start_servers = 5
@@ -53,7 +57,7 @@ php_value[upload_max_filesize] = 256M
 EOF
 fi
 
-systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
+#systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 
 if [[ "$REMOVE" == 1 ]] ; then
   systemctl stop "${user}-${domain}-php.service"
@@ -69,8 +73,7 @@ else
     echo "#Custom .env file for ${domain}. Add own custom environment variables here." > "$home_dir/$user/${domain}-php.env"
     chown "${user}":"${user}" "$home_dir/$user/${domain}-php.env"
   fi
-  userid=$(id -u "${user}")
-  groupid=$(id -g "${user}")
+
   cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}

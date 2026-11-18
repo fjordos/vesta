@@ -11,7 +11,11 @@ mkdir -p "$home_dir/$user/web/$domain/tmp/"{opcache,peclxml,session,wsdlcache}
 chmod 0700 "$home_dir/$user/web/$domain/tmp"
 chown -R "$user":"$user" "$home_dir/$user/web/$domain/"{tmp,php}
 
+userid=$(id -u "${user}")
+groupid=$(id -g "${user}")
+
 phpv=74
+# TODO: change same logic with "/etc/vesta/php*-fpm.d/${user}@${domain}.conf"
 if ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" >/dev/null 2>&1 ; then
   oldphpvs="$(ls /etc/opt/remi/php*/php-fpm.d/"${user}@${domain}.conf" | awk -F'/' '{print $5}')"
   for oldphpv in $oldphpvs ; do
@@ -24,14 +28,15 @@ fi
 
 if [[ "$REMOVE" == 1 ]] ; then
   rm -f "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf"
+  rm -f "/etc/vesta/php$phpv-fpm.d/${user}@${domain}.conf"
 else
-  cat > "/etc/opt/remi/php$phpv/php-fpm.d/${user}@${domain}.conf" << EOF
+  cat > "/etc/vesta/php$phpv-fpm.d/${user}@${domain}.conf" << EOF
 [${user}@${domain}]
-user = $user
-group = $user
+user = $userid
+group = $groupid
 listen = /home/$user/web/$domain/php.socket
 listen.acl_users = nginx,apache
-listen.acl_groups = $user
+listen.acl_groups = $groupid
 pm = dynamic
 pm.max_children = 50
 pm.start_servers = 5
@@ -53,7 +58,7 @@ php_value[upload_max_filesize] = 256M
 EOF
 fi
 
-systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
+#systemctl try-reload-or-restart "php${phpv}-php-fpm" ||:
 
 if [[ "$REMOVE" == 1 ]] ; then
   systemctl stop "${user}-${domain}-php.service"
@@ -69,8 +74,7 @@ else
     echo "#Custom .env file for ${domain}. Add own custom environment variables here." > "$home_dir/$user/${domain}-php.env"
     chown "${user}":"${user}" "$home_dir/$user/${domain}-php.env"
   fi
-  userid=$(id -u "${user}")
-  groupid=$(id -g "${user}")
+
   cat > /etc/containers/systemd/"${user}-${domain}-php.container" << EOF
 [Unit]
 Description=PHP-${phpv} application container for ${domain}
@@ -88,8 +92,8 @@ DNS=9.9.9.9
 DNS=1.1.1.1
 DNS=8.8.8.8
 EnvironmentFile=$home_dir/$user/${domain}-php.env
-Volume=/usr/local/vesta/install/fedora/44/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
-Volume=/usr/local/vesta/install/fedora/44/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
+Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}.ini:/etc/php.d/vesta.ini:ro,Z
+Volume=/usr/local/vesta/install/fedora/45/vesta/php/php${phpv}-tmp.ini:/etc/php.d/vesta-tmp.ini:ro,Z
 Volume=$home_dir/$user/${domain}-php.ini:/etc/php.d/ZZ-custom.ini:ro,Z
 Volume=$docroot:/var/www/html:rw,Z
 Volume=$home_dir/$user/web/${domain}/php:/run/php-fpm:rw,Z
